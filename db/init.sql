@@ -2,19 +2,19 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE party (
         id INTEGER PRIMARY KEY,
-        name TEXT,
-        abbreviation TEXT
+        name TEXT NOT NULL,
+        abbreviation TEXT NOT NULL
 );
 
 CREATE TABLE election (
     id INTEGER PRIMARY KEY, 
-    date TEXT, 
-    name TEXT
+    date INTEGER  NOT NULL, 
+    name TEXT NOT NULL
 );
 
 CREATE TABLE region (
     id INTEGER PRIMARY KEY, 
-    num INTEGER, name TEXT
+    num INTEGER, name TEXT NOT NULL
 );
 
 INSERT INTO region (num, name) VALUES 
@@ -33,21 +33,21 @@ INSERT INTO region (num, name) VALUES
 
 CREATE TABLE vote (
         id INTEGER PRIMARY KEY,
-        election_id INTEGER,
-        region_id INTEGER,
-        party_id INTEGER,
-        votes INTEGER,
-        primary_vote BOOLEAN,
+        election_id INTEGER NOT NULL,
+        region_id INTEGER NOT NULL,
+        party_id INTEGER NOT NULL,
+        votes INTEGER NOT NULL,
+        primary_vote BOOLEAN NOT NULL,
         FOREIGN KEY (election_id) REFERENCES election (id),
         FOREIGN KEY (region_id) REFERENCES region (id),        
         FOREIGN KEY (party_id) REFERENCES party (id)
 );
 
 CREATE TABLE turnout (
-        election_id INTEGER,
-        region_id INTEGER,
-        eligible INTEGER,
-        voted INTEGER,
+        election_id INTEGER NOT NULL,
+        region_id INTEGER NOT NULL,
+        eligible INTEGER NOT NULL,
+        voted INTEGER NOT NULL,
         primary_vote BOOLEAN,
         PRIMARY KEY (election_id, region_id, primary_vote),
         FOREIGN KEY (election_id) REFERENCES election (id),

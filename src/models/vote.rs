@@ -13,9 +13,11 @@ pub struct Vote {
 }
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
-pub struct VoteTurnout {
+pub struct VoteTurnout {    
+    #[schema(example = 69420)]
     pub eligible: i64,
-    pub voted: i64,
+    #[schema(example = 42069)]
+    pub voted: i64,    
     pub primary_vote: bool,
 }
 
@@ -23,7 +25,7 @@ pub struct VoteTurnout {
 pub(crate) struct ElectoralVote {
     #[serde(flatten)]
     pub party: Party,
-    #[schema(example = 1234)]
+    #[schema(example = 161)]
     pub votes: i64,
     pub primary_vote: bool,
 }

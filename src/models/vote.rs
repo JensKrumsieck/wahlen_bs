@@ -19,10 +19,10 @@ pub struct VoteTurnout {
     pub voted: i64,
     pub primary_vote: bool,
     #[schema(example = 0.69)]
-    pub turnout: f32
+    pub turnout: f32,
 }
 
-#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, utoipa::ToSchema, PartialEq)]
 pub(crate) struct ElectoralVote {
     #[serde(flatten)]
     pub party: Party,
@@ -30,5 +30,5 @@ pub(crate) struct ElectoralVote {
     pub votes: i64,
     pub primary_vote: bool,
     #[schema(example = 0.51)]
-    pub percentage: f32
+    pub percentage: f32,
 }

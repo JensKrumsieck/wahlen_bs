@@ -2,7 +2,7 @@ use crate::AppContext;
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
 use serde::Serialize;
 
-#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, utoipa::ToSchema, PartialEq)]
 pub(crate) struct Party {
     #[schema(example = "GRÜNE")]
     pub id: String,

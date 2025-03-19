@@ -117,15 +117,18 @@ async fn get_election(
 
         //add votes
         if let Some(party_id) = row.party_id {
-            region.votes.push(ElectoralVote {
+            let vote = ElectoralVote {
                 party: Party {
                     id: party_id,
                     name: row.party_name.unwrap(),
                 },
                 votes: row.votes.unwrap_or(0),
                 primary_vote: row.primary_vote.unwrap_or(false),
-                percentage: 0.0
-            });
+                percentage: 0.0,
+            };
+            if !region.votes.iter().any(|v| v == &vote) {
+                region.votes.push(vote);
+            }
         }
 
         if let Some(eligible) = row.eligible {
@@ -133,7 +136,7 @@ async fn get_election(
                 eligible,
                 voted: row.voted.unwrap_or(0),
                 primary_vote: row.turnout_primary_vote.unwrap_or(false),
-                turnout: row.voted.unwrap_or(0) as f32 / eligible as f32
+                turnout: row.voted.unwrap_or(0) as f32 / eligible as f32,
             };
             if !region.turnout.iter().any(|t| t == &turnout) {
                 region.turnout.push(turnout);
@@ -144,7 +147,11 @@ async fn get_election(
     let mut result: Vec<RegionVotes> = region_map.into_values().collect();
 
     for region in result.iter_mut() {
-        let total_votes = region.turnout.iter().map(|t| (t.primary_vote, t.voted as f32)).collect::<HashMap<_,_>>();
+        let total_votes = region
+            .turnout
+            .iter()
+            .map(|t| (t.primary_vote, t.voted as f32))
+            .collect::<HashMap<_, _>>();
         for vote in region.votes.iter_mut() {
             vote.percentage = vote.votes as f32 / total_votes[&vote.primary_vote];
         }

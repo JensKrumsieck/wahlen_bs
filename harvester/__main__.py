@@ -120,9 +120,7 @@ for item in open_data:
 
     # add votes to db
     for _, row in df.iterrows():
-        res = db.execute("SELECT id FROM region WHERE num = ?",
-                         (row["gebiet-nr"],))
-        region_id = res.fetchone()[0]
+        region_id = row["gebiet-nr"]
 
         max_votes = row["A"]
         valid_votes = row["D"]
@@ -218,9 +216,7 @@ for election_selector in elections:
 
         # add to db
         for _, row in df.iterrows():
-            res = db.execute("SELECT id FROM region WHERE num = ?",
-                             (row["gebiet-nr"],))
-            region_id = res.fetchone()[0]
+            region_id = row["gebiet-nr"]
             cursor = db.cursor()
             cursor.execute("INSERT INTO turnout (election_id, region_id, eligible, voted, primary_vote) VALUES (?, ?, ?, ?, ?)",
                            (election_id, region_id, row["max_voters"], row["valid_votes"], row["primary_vote"] != 0))

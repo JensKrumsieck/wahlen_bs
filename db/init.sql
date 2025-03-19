@@ -7,17 +7,17 @@ CREATE TABLE party (
 );
 
 CREATE TABLE election (
-    id INTEGER PRIMARY KEY, 
-    date INTEGER  NOT NULL, 
-    name TEXT NOT NULL
+        id INTEGER PRIMARY KEY, 
+        date INTEGER  NOT NULL, 
+        name TEXT NOT NULL
 );
 
 CREATE TABLE region (
-    id INTEGER PRIMARY KEY, 
-    num INTEGER, name TEXT NOT NULL
+        id INTEGER PRIMARY KEY, 
+        name TEXT NOT NULL
 );
 
-INSERT INTO region (num, name) VALUES 
+INSERT INTO region (id, name) VALUES 
         (111, "Hondelage-Volkmarode"),
         (112, "Wabe-Schunter-Beberbach"),
         (120, "Östliches Ringgebiet"),
@@ -48,7 +48,7 @@ CREATE TABLE turnout (
         region_id INTEGER NOT NULL,
         eligible INTEGER NOT NULL,
         voted INTEGER NOT NULL,
-        primary_vote BOOLEAN,
+        primary_vote BOOLEAN NOT NULL,
         PRIMARY KEY (election_id, region_id, primary_vote),
         FOREIGN KEY (election_id) REFERENCES election (id),
         FOREIGN KEY (region_id) REFERENCES region (id)

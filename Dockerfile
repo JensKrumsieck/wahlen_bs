@@ -1,5 +1,7 @@
 FROM rust:1.85-bullseye as builder
 WORKDIR /app
+ENV DATABASE_URL=sqlite:///app/db/elections.db
+
 COPY . .
 
 RUN \

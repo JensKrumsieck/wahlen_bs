@@ -17,7 +17,7 @@ pub(crate) struct AppContext {
 #[openapi(paths(
     region::get_regions,
     party::get_parties,
-    election::get_election_region,
+    election::get_election,
     election::get_elections
 ))]
 struct ApiDoc;

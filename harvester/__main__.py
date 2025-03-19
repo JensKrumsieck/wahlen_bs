@@ -124,14 +124,18 @@ for item in open_data:
 
         max_votes = row["A"]
         valid_votes = row["D"]
-        add_votes(row, election_id, region_id, party_mapping,
+        if item["name"] in ["Bundestagswahl", "Landtagswahl"]: # erststimme auf D, zweitstimme auf F!
+            add_votes(row, election_id, region_id, party_mapping,
+                  True, max_votes, valid_votes)
+        else:
+            add_votes(row, election_id, region_id, party_mapping,
                   False, max_votes, valid_votes)
 
         if item["name"] in ["Bundestagswahl", "Landtagswahl"]:
             max_votes = row["A"]
             valid_votes = row["F"]
             add_votes(row, election_id, region_id, party_mapping,
-                      True, max_votes, valid_votes)
+                      False, max_votes, valid_votes)
 # end votemanager
 
 # start before 2018

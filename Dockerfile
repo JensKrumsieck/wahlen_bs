@@ -15,4 +15,4 @@ ENV DATABASE_URL=sqlite:///app/elections.db
 
 COPY --from=builder /wahlen_bs /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/wahlen_bs"]
-EXPOSE 8080
+EXPOSE 8080/tcp

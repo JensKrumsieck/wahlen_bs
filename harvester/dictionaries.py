@@ -25,8 +25,8 @@ dict_parties = {
     "PARTEI MENSCH UMWELT TIERSCHUTZ": "Tierschutzpartei",
     "Tierschutzpartei": "Tierschutzpartei",
     "Mensch Umwelt Tierschutz": "Tierschutzpartei",
-    "Basisdemokratische Partei Deutschland": "Die Basis",
-    "Basisdemokratische Partei Deutschland Landesverband Niedersachsen": "Die Basis",
+    "Basisdemokratische Partei Deutschland": "dieBasis",
+    "Basisdemokratische Partei Deutschland Landesverband Niedersachsen": "dieBasis",
     "Partei für Arbeit, Rechtsstaat, Tierschutz, Elitenförderung und basisdemokratische Initiative": "Die PARTEI",
     "Die PARTEI": "Die PARTEI",
     "FREIE WÄHLER": "FW",
@@ -61,13 +61,13 @@ dict_parties = {
     "Nationaldemokratische Partei Deutschlands": "NPD",
     "NPD": "NPD",
     "Partei für Gesundheitsforschung": "Gesundheitsforschung",
-    "Partei für schulmedizinische Verjüngungsforschung": "Gesundheitsforschung",
+    "Partei für schulmedizinische Verjüngungsforschung": "Verjüngungsforschung",
     "Team Todenhöfer - Die Gerechtigkeitspartei": "Team Todenhöfer",
     "Team Todenhöfer – Die Gerechtigkeitspartei": "Team Todenhöfer",
     "Die Heimat": "Die Heimat",
     "Bürgerinitiative Braunschweig": "BIBS",
     "BIBS": "BIBS",
-    "Die Urbane. Eine HipHop Partei": "Die Urbane",
+    "Die Urbane. Eine HipHop Partei": "du.",
     "V-Partei³ - Partei für Veränderung, Vegetarier und Veganer": "V-Partei³",
     "Klimaliste Deutschland": "Klimaliste",
     "Parlament aufmischen - Stimme der Letzten Generation": "Letzte Generation",
@@ -104,13 +104,22 @@ dict_parties = {
     "Partei Bibeltreuer Christen": "PBC",
     "SGV - Solidarität, Gerechtigkeit, Veränderung": "SGV",
     "Sozialistische Gleichheitspartei, Vierte Internationale": "SGP",
+    "Partei für Soziale Gleichheit, Sektion der Vierten Internationale": "SGP",
     "Aktion Bürger für Gerechtigkeit": "ABG",
     "Demokratische Allianz für Vielfalt und Aufbruch": "DAVA",
-    "Die Haie - Partei mit Biss": "Die Haie",
+    "Die Haie - Partei mit Biss": "HAIE",
     "AUF - Partei für Arbeit, Umwelt und Familie Christen für Deutschland": "AUF",
     "DIE FREIHEIT Niedersachsen": "DIE FREIHEIT",
     "Bürgerbewegung PRO NRW": "pro Deutschland",
     "Bürgerrechtsbewegung Solidarität": "BüSo",
+    "DEMOKRATIE Verantwortung und Gerechtigkeit": "Einzelbewerber Wolter",
+    "Einzelwahlvorschlag Krüger": "Einzelbewerber Krüger",
+    "EB22": "Einzelbewerber Rosenbaum",
+    "EB23": "Einzelbewerber Wolter",
+    "EB24": "Einzelbewerber Gust",
+    "EB13": "Einzelbewerber Thomas",
+    "EB14": "Einzelbewerber Dauter",
+    "DIE SONSTIGEN Niedersachsen X": "SONSTIGE (Partei)"
 }
 
 dict_canonical_parties = {
@@ -131,6 +140,11 @@ dict_canonical_parties = {
     "REP": "Republikaner",
     "PBC": "Partei Bibeltreuer Christen",
     "DVU": "Deutsche Volksunion",
+    "Einzelbewerber Rosenbaum": "Einzelbewerber Rosenbaum",
+    "Einzelbewerber Wolter": "Einzelbewerber Wolter",
+    "Einzelbewerber Gust": "Einzelbewerber Gust",
+    "Einzelbewerber Thomas": "Einzelbewerber Thomas",
+    "Einzelbewerber Dauter": "Einzelbewerber Dauter"
 }
 
 dict_group_mapping = {

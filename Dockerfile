@@ -11,6 +11,7 @@ RUN \
 FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 COPY db/elections.db /app
+ENV RUST_LOG="wahlen_bs=info,tower_http=info,axum::rejection=trace"
 ENV DATABASE_URL=sqlite:///app/elections.db
 
 COPY --from=builder /wahlen_bs /usr/local/bin

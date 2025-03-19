@@ -1,7 +1,10 @@
+use std::time::Duration;
+
 use axum::{response::Redirect, routing::get, Router};
 use models::{election, party, region};
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
+use tower_http::{catch_panic::CatchPanicLayer, compression::CompressionLayer, timeout::TimeoutLayer, trace::TraceLayer};
 use tracing::info;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -41,5 +44,11 @@ fn router(ctx: AppContext) -> Router {
         .merge(election::router())
         .merge(party::router())
         .merge(region::router())
+        .layer((
+            TraceLayer::new_for_http().on_failure(()),
+            CompressionLayer::new(),
+            CatchPanicLayer::new(),
+            TimeoutLayer::new(Duration::from_secs(20))
+        ))
         .with_state(ctx)
 }

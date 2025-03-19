@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{response::Redirect, routing::get, Router};
 use models::{election, party, region};
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
@@ -36,6 +36,7 @@ pub async fn serve(db: SqlitePool) -> anyhow::Result<()> {
 fn router(ctx: AppContext) -> Router {
     let api = ApiDoc::openapi();
     Router::new()
+        .route("/", get(|| async { Redirect::temporary("/docs") }))
         .merge(SwaggerUi::new("/docs").url("/docs/openapi.json", api))
         .merge(election::router())
         .merge(party::router())

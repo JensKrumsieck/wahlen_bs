@@ -1,4 +1,4 @@
-use super::vote::ElectoralVote;
+use super::vote::{ElectoralVote, VoteTurnout};
 use crate::AppContext;
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
 use serde::Serialize;
@@ -15,6 +15,7 @@ pub(crate) struct Region {
 pub(crate) struct RegionVotes {
     #[serde(flatten)]
     pub region: Region,
+    pub turnout: Vec<VoteTurnout>,
     pub votes: Vec<ElectoralVote>,
 }
 

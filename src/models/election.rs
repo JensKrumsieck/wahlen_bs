@@ -25,7 +25,6 @@ struct Election {
 struct ElectionRegion {
     #[serde(flatten)]
     pub election: Election,
-    pub turnout: Vec<VoteTurnout>,
     pub region: RegionVotes,
 }
 
@@ -89,8 +88,6 @@ async fn get_election_region(
         votes.retain(|v| v.primary_vote == primary)
     }
 
-    let region_votes = RegionVotes { region, votes };
-
     let raw_turnouts = sqlx::query!(
         "SELECT * FROM turnout WHERE election_id = $1 AND region_id = $2",
         election_id,
@@ -113,10 +110,15 @@ async fn get_election_region(
         turnout.retain(|v| v.primary_vote == primary)
     }
 
+    let region_votes = RegionVotes {
+        region,
+        votes,
+        turnout,
+    };
+    
     let result = ElectionRegion {
         region: region_votes,
         election,
-        turnout,
     };
 
     Ok(Json(result))

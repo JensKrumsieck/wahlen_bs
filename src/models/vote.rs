@@ -12,19 +12,18 @@ pub struct Vote {
     pub primary_vote: bool,
 }
 
-#[derive(Debug, Serialize)]
-pub struct Turnout {
-    pub election_id: i64,
-    pub region_id: i64,
+#[derive(Debug, Serialize, utoipa::ToSchema)]
+pub struct VoteTurnout {
     pub eligible: i64,
     pub voted: i64,
     pub primary_vote: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub(crate) struct ElectoralVote {
     #[serde(flatten)]
     pub party: Party,
+    #[schema(example = 1234)]
     pub votes: i64,
     pub primary_vote: bool,
 }

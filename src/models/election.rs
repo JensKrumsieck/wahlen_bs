@@ -1,4 +1,8 @@
-use crate::{models::region::Region, AppContext};
+use super::{region::RegionVotes, vote::fetch_votes};
+use crate::{
+    models::{region::Region, vote::VoteTurnout},
+    AppContext,
+};
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -7,23 +11,21 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::{
-    region::RegionVotes,
-    vote::{fetch_votes, Turnout},
-};
-
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 struct Election {
+    #[schema(example = 1)]
     pub id: i64,
+    #[schema(example = 2025)]
     pub date: i64,
+    #[schema(example = "Bundestagswahl")]
     pub name: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 struct ElectionRegion {
     #[serde(flatten)]
     pub election: Election,
-    pub turnout: Vec<Turnout>,
+    pub turnout: Vec<VoteTurnout>,
     pub region: RegionVotes,
 }
 
@@ -34,6 +36,10 @@ pub(crate) fn router() -> Router<AppContext> {
     )
 }
 
+#[utoipa::path(get, path = "/election",
+responses(
+    (status = 200, description = "List all elections", body = [Election])
+))]
 async fn get_elections(ctx: State<AppContext>) -> Result<Json<Vec<Election>>, StatusCode> {
     let elections = sqlx::query_as!(Election, "SELECT * FROM election")
         .fetch_all(&ctx.db)
@@ -42,11 +48,21 @@ async fn get_elections(ctx: State<AppContext>) -> Result<Json<Vec<Election>>, St
     Ok(Json(elections))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, utoipa::IntoParams)]
+#[into_params(parameter_in=Query)]
 struct ElectionRegionQuery {
     primary_vote: Option<bool>,
 }
 
+#[utoipa::path(get, path = "/election/{election_id}/region/{region_id}",
+params(
+    ("election_id" = i32, Path, description = "election database id"),
+    ("region_id" = i32, Path, description = "region id"),
+    ElectionRegionQuery
+),
+responses(
+    (status = 200, description = "List Election results for specific Region", body = ElectionRegion)
+))]
 async fn get_election_region(
     Path((election_id, region_id)): Path<(i64, i64)>,
     Query(query): Query<ElectionRegionQuery>,
@@ -75,8 +91,7 @@ async fn get_election_region(
 
     let region_votes = RegionVotes { region, votes };
 
-    let mut turnout = sqlx::query_as!(
-        Turnout,
+    let raw_turnouts = sqlx::query!(
         "SELECT * FROM turnout WHERE election_id = $1 AND region_id = $2",
         election_id,
         region_id
@@ -84,6 +99,15 @@ async fn get_election_region(
     .fetch_all(&ctx.db)
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let mut turnout: Vec<VoteTurnout> = raw_turnouts
+        .iter()
+        .map(|t| VoteTurnout {
+            eligible: t.eligible,
+            voted: t.voted,
+            primary_vote: t.primary_vote,
+        })
+        .collect();
 
     if let Some(primary) = query.primary_vote {
         turnout.retain(|v| v.primary_vote == primary)

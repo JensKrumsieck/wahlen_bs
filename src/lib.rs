@@ -3,6 +3,8 @@ use models::{election, party, region};
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use tracing::info;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 pub mod models;
 
@@ -10,6 +12,15 @@ pub mod models;
 pub(crate) struct AppContext {
     db: SqlitePool,
 }
+
+#[derive(OpenApi)]
+#[openapi(paths(
+    region::get_regions,
+    party::get_parties,
+    election::get_election_region,
+    election::get_elections
+))]
+struct ApiDoc;
 
 pub async fn serve(db: SqlitePool) -> anyhow::Result<()> {
     let ctx = AppContext { db };
@@ -23,7 +34,9 @@ pub async fn serve(db: SqlitePool) -> anyhow::Result<()> {
 }
 
 fn router(ctx: AppContext) -> Router {
+    let api = ApiDoc::openapi();
     Router::new()
+        .merge(SwaggerUi::new("/docs").url("/docs/openapi.json", api))
         .merge(election::router())
         .merge(party::router())
         .merge(region::router())

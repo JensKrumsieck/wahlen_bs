@@ -108,6 +108,8 @@ for item in open_data:
         # only secondary votes
         for column_id, party_id in party_mapping.items():
             if primary_vote:
+                columnname = "D" + column_id
+            elif item["name"] in ["Bundestagswahl", "Landtagswahl"]:
                 columnname = "F" + column_id
             else:
                 columnname = "D" + column_id + \
@@ -124,12 +126,12 @@ for item in open_data:
 
         max_votes = row["A"]
         valid_votes = row["D"]
-        if item["name"] in ["Bundestagswahl", "Landtagswahl"]: # erststimme auf D, zweitstimme auf F!
+        if item["name"] in ["Bundestagswahl", "Landtagswahl"]:  # erststimme auf D, zweitstimme auf F!
             add_votes(row, election_id, region_id, party_mapping,
-                  True, max_votes, valid_votes)
+                      True, max_votes, valid_votes)
         else:
             add_votes(row, election_id, region_id, party_mapping,
-                  False, max_votes, valid_votes)
+                      False, max_votes, valid_votes)
 
         if item["name"] in ["Bundestagswahl", "Landtagswahl"]:
             max_votes = row["A"]
@@ -240,5 +242,5 @@ for election_selector in elections:
                 cursor.execute("INSERT INTO vote (election_id, region_id, party_id, votes, primary_vote) VALUES (?, ?, ?, ?, ?)",
                                (election_id, region_id, party_id, votes, row["primary_vote"] != 0))
             db.commit()
-# end before 2018    
+# end before 2018
 db.close()

@@ -4,12 +4,10 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
 pub(crate) struct Party {
-    #[schema(example = 3)]
-    pub id: i64,
+    #[schema(example = "GRÜNE")]
+    pub id: String,
     #[schema(example = "BÜNDNIS 90/DIE GRÜNEN")]
     pub name: String,
-    #[schema(example = "GRÜNE")]
-    pub abbreviation: String,
 }
 
 pub(crate) fn router() -> Router<AppContext> {

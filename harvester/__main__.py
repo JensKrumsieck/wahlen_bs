@@ -70,15 +70,15 @@ for item in open_data:
     for party in parties:
         party_short = dict_parties.get(party["wert"], party["wert"])
         res = db.execute(
-            "SELECT id FROM party WHERE abbreviation LIKE ?", (party_short,))
+            "SELECT id FROM party WHERE id LIKE ?", (party_short,))
         row = res.fetchone()
         if not row:
             cursor = db.cursor()
             canonical = dict_canonical_parties.get(party_short, party["wert"])
             cursor.execute(
-                "INSERT INTO party (abbreviation, name) VALUES (?, ?)", (party_short, canonical))
+                "INSERT INTO party (id, name) VALUES (?, ?)", (party_short, canonical))
             db.commit()
-            party_id = cursor.lastrowid
+            party_id = party_short
         else:
             party_id = row[0]
         party_column_id = re.match(r"^D(\d+)", party["feld"]).group(1)
@@ -224,12 +224,12 @@ for election_selector in elections:
                 if party in ["gebiet", "gebiet-nr", "primary_vote", "max_voters", "valid_votes"]:
                     continue
                 cursor.execute(
-                    "SELECT id FROM party WHERE abbreviation LIKE ?", (party,))
+                    "SELECT id FROM party WHERE id LIKE ?", (party,))
                 pt = cursor.fetchone()
                 if not pt:
-                    cursor.execute("INSERT INTO party (abbreviation, name) VALUES (?, ?)",
+                    cursor.execute("INSERT INTO party (id, name) VALUES (?, ?)",
                                    (party, dict_canonical_parties.get(party, party)))
-                    party_id = cursor.lastrowid
+                    party_id = party
                 else:
                     party_id = pt[0]
 

@@ -1,14 +1,13 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE party (
-        id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        abbreviation TEXT NOT NULL
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL
 );
 
 CREATE TABLE election (
         id INTEGER PRIMARY KEY, 
-        date INTEGER  NOT NULL, 
+        date INTEGER NOT NULL, 
         name TEXT NOT NULL
 );
 
@@ -35,7 +34,7 @@ CREATE TABLE vote (
         id INTEGER PRIMARY KEY,
         election_id INTEGER NOT NULL,
         region_id INTEGER NOT NULL,
-        party_id INTEGER NOT NULL,
+        party_id TEXT NOT NULL,
         votes INTEGER NOT NULL,
         primary_vote BOOLEAN NOT NULL,
         FOREIGN KEY (election_id) REFERENCES election (id),

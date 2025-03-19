@@ -6,7 +6,7 @@ pub struct Vote {
     pub id: i64,
     pub election_id: i64,
     pub region_id: i64,
-    pub party_id: i64,
+    pub party_id: String,
     pub votes: i64,
     pub primary_vote: bool,
 }

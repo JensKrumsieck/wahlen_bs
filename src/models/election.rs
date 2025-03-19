@@ -81,14 +81,14 @@ async fn get_election(
         r#"
         SELECT r.id as region_id, r.name as region_name,
                v.id as vote_id, v.votes, v.primary_vote,
-               p.id as party_id, p.name as party_name, p.abbreviation as party_abbreviation,
+               p.id as party_id, p.name as party_name,
                t.eligible, t.voted, t.primary_vote as turnout_primary_vote
         FROM region r
         LEFT JOIN vote v ON v.region_id = r.id AND v.election_id = $1
         LEFT JOIN party p ON v.party_id = p.id
         LEFT JOIN turnout t ON t.region_id = r.id AND t.election_id = $1
         WHERE ($2 IS NULL OR r.id = $2)
-        AND ($3 IS NULL OR p.abbreviation = $3)
+        AND ($3 IS NULL OR p.id = $3)
         AND ($4 IS NULL OR t.primary_vote = $4)
         AND ($4 IS NULL OR v.primary_vote = $4);
         "#,
@@ -116,12 +116,11 @@ async fn get_election(
             });
 
         //add votes
-        if let Some(party_name) = row.party_name {
+        if let Some(party_id) = row.party_id {
             region.votes.push(ElectoralVote {
                 party: Party {
-                    id: row.party_id,
-                    name: party_name,
-                    abbreviation: row.party_abbreviation.unwrap(),
+                    id: party_id,
+                    name: row.party_name.unwrap(),
                 },
                 votes: row.votes.unwrap_or(0),
                 primary_vote: row.primary_vote.unwrap_or(false),

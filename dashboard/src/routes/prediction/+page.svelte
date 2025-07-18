@@ -20,8 +20,8 @@
 </select>
 
 <select bind:value={backend} class="form-select">
-    <option value="mlr">MLR</option>
-    <option value="tf">TensorFlow</option>
+    <option value="mlr">Multivariate Lineare Regression</option>
+    <option value="tf">Neuronales Netz</option>
 </select>
 
 {#await prediction}

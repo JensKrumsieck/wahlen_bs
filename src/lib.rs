@@ -4,7 +4,13 @@ use axum::{response::Redirect, routing::get, Router};
 use models::{election, party, region};
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
-use tower_http::{catch_panic::CatchPanicLayer, compression::CompressionLayer, timeout::TimeoutLayer, trace::TraceLayer};
+use tower_http::{
+    catch_panic::CatchPanicLayer,
+    compression::CompressionLayer,
+    cors::{Any, CorsLayer},
+    timeout::TimeoutLayer,
+    trace::TraceLayer,
+};
 use tracing::info;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -38,6 +44,7 @@ pub async fn serve(db: SqlitePool) -> anyhow::Result<()> {
 
 fn router(ctx: AppContext) -> Router {
     let api = ApiDoc::openapi();
+
     Router::new()
         .route("/", get(|| async { Redirect::temporary("/docs") }))
         .merge(SwaggerUi::new("/docs").url("/docs/openapi.json", api))
@@ -48,7 +55,11 @@ fn router(ctx: AppContext) -> Router {
             TraceLayer::new_for_http().on_failure(()),
             CompressionLayer::new(),
             CatchPanicLayer::new(),
-            TimeoutLayer::new(Duration::from_secs(20))
+            TimeoutLayer::new(Duration::from_secs(20)),
+            CorsLayer::new()
+                .allow_origin(Any)
+                .allow_methods([axum::http::Method::GET])
+                .allow_headers(Any),
         ))
         .with_state(ctx)
 }

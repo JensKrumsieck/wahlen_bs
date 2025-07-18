@@ -1,5 +1,6 @@
 import { API_URL, ELECTION_MAP, RELEVANT_PARTIES } from "./config";
 import MLR from 'ml-regression-multivariate-linear';
+import { Polls, Query, Order, DataType } from 'german-election-polls';
 import * as tf from '@tensorflow/tfjs';
 // @ts-ignore
 import results_csv from '$lib/data/results_germany.csv';
@@ -118,7 +119,71 @@ export type ElectionResult = {
     Sonstige: number;
 };
 
-export async function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], backend: "tf" | "mlr") {
+async function getDawumData(limit: Date) {
+    const polls = new Polls();
+    await polls.update();
+    const query = polls.select([
+        Query.include([DataType.Surveys]),
+        Query.Survey.Release.isGreater(limit),
+        Query.Survey.Parliament.Shortcut.is(['Bundestag']),
+        Query.Survey.Sort.byParticipants(Order.Asc),
+        Query.Survey.Sort.allResults(Order.Desc),
+    ]);
+    return await query;
+}
+
+export async function getSurveyData() {
+    let now = Date.now();
+    let limit = new Date(now - 1000 * 60 * 60 * 24 * 7);
+    let dawum = await getDawumData(limit);
+
+    let results: ElectionResult[] = [];
+    for (const survey of dawum.surveys) {
+        results.push({
+            name: survey.institute.name,
+            CDU: survey.results.find(r => r.party.shortcut === 'CDU/CSU')?.result ?? 0,
+            SPD: survey.results.find(r => r.party.shortcut === 'SPD')?.result ?? 0,
+            GRÜNE: survey.results.find(r => r.party.shortcut === 'Grüne')?.result ?? 0,
+            LINKE: survey.results.find(r => r.party.shortcut === 'Linke')?.result ?? 0,
+            FDP: survey.results.find(r => r.party.shortcut === 'FDP')?.result ?? 0,
+            AfD: survey.results.find(r => r.party.shortcut === 'AfD')?.result ?? 0,
+            Sonstige: survey.results.find(r => r.party.shortcut === 'Sonstige')?.result ?? 0,
+        });
+    }
+
+    let mean: ElectionResult = {
+        name: "Durchschnitt",
+        CDU: 0,
+        SPD: 0,
+        GRÜNE: 0,
+        LINKE: 0,
+        FDP: 0,
+        AfD: 0,
+        Sonstige: 0,
+    };
+
+    for (const result of results) {
+        mean.CDU += result.CDU;
+        mean.SPD += result.SPD;
+        mean.GRÜNE += result.GRÜNE;
+        mean.LINKE += result.LINKE;
+        mean.FDP += result.FDP;
+        mean.AfD += result.AfD;
+        mean.Sonstige += result.Sonstige;
+    }
+
+    mean.CDU /= results.length * 100;
+    mean.SPD /= results.length * 100;
+    mean.GRÜNE /= results.length * 100;
+    mean.LINKE /= results.length * 100;
+    mean.FDP /= results.length * 100;
+    mean.AfD /= results.length * 100;
+    mean.Sonstige /= results.length * 100;
+
+    return mean;
+}
+
+export async function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult, backend: "tf" | "mlr") {
     let X = bundData.map(row => [
         row.CDU ?? 0,
         row.SPD ?? 0,
@@ -140,18 +205,27 @@ export async function predictResults(regionData: ElectionResult[], bundData: Ele
     X.push([0, 0, 0, 0, 0, 0]);
     Y.push([0, 0, 0, 0, 0, 0]);
 
-    return backend == "mlr" ? predictMLR(X, Y) : await predictTF(X, Y);
+    let x_pred = [
+        predictionData.CDU ?? 0,
+        predictionData.SPD ?? 0,
+        predictionData.GRÜNE ?? 0,
+        predictionData.LINKE ?? 0,
+        predictionData.FDP ?? 0,
+        predictionData.AfD ?? 0,
+    ];
+
+    return backend == "mlr" ? predictMLR(X, Y, x_pred) : await predictTF(X, Y, x_pred);
 
 }
 
-function predictMLR(X: number[][], Y: number[][]): number[] {
+function predictMLR(X: number[][], Y: number[][], X_pred: number[]): number[] {
     const mlr = new MLR(X, Y);
-    const prediction = mlr.predict([.270, .153, .119, .100, .035, .227]);
+    const prediction = mlr.predict(X_pred);
 
     return prediction;
 }
 
-async function predictTF(X: number[][], Y: number[][]): Promise<number[]> {
+async function predictTF(X: number[][], Y: number[][], X_pred: number[]): Promise<number[]> {
     const tensorX = tf.tensor2d(X);
     const tensorY = tf.tensor2d(Y);
 
@@ -165,7 +239,7 @@ async function predictTF(X: number[][], Y: number[][]): Promise<number[]> {
         epochs: 500,
     });
 
-    const prediction = model.predict(tf.tensor2d([[.270, .153, .119, .100, .035, .227]])) as tf.Tensor;
+    const prediction = model.predict(tf.tensor2d([X_pred])) as tf.Tensor;
     const result = await prediction.data() as Float32Array;
     prediction.dispose();
     tensorX.dispose();

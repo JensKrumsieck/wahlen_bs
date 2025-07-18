@@ -1,11 +1,14 @@
 <script lang="ts">
+    import { Jumper } from "svelte-loading-spinners";
     import { getResultsForRegion, predictResults, results_bund } from "$lib/elections";
+
     export let data;
-    const { elections, regions } = data;
+    const { elections, regions, predictionData } = data;
     let selectedRegion = 0;
     let backend: "mlr" | "tf" = "mlr";
+
     $: regionData = getResultsForRegion(selectedRegion, elections);
-    $: prediction = predictResults(regionData, results_bund, backend);
+    $: prediction = predictResults(regionData, results_bund, predictionData, backend);
 </script>
 
 <select bind:value={selectedRegion} class="form-select">
@@ -22,7 +25,7 @@
 </select>
 
 {#await prediction}
-    Denke nach...
+    <Jumper size="60" />
 {:then prediction}
     {#each prediction as value}
         {value},

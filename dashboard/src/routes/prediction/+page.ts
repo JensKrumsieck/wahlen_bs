@@ -1,4 +1,4 @@
-import { get_available_elections, get_available_regions, type Election, type ElectionResult } from '$lib/elections';
+import { get_available_elections, get_available_regions, getSurveyData, type Election, type ElectionResult } from '$lib/elections';
 import type { LoadEvent } from '@sveltejs/kit';
 import { API_URL } from '$lib/config';
 
@@ -14,6 +14,6 @@ export async function load({ fetch }: LoadEvent) {
     }
 
     const regions = await get_available_regions(fetch);
-
-    return { elections: electionData, regions };
+    const predictionData = await getSurveyData();
+    return { elections: electionData, regions, predictionData };
 }

@@ -1,0 +1,3 @@
+buildImage = 'ghcr.io/railwayapp/nixpacks:latest'
+[phases.setup]
+nixpkgsArchive = 'd7211731d89af9d8930fab948a1a372e15119a02'

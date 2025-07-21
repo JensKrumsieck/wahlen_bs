@@ -15,7 +15,7 @@ There is a Rust `axum` based REST API server application. Swagger UI will be at 
 
 ## Harvester
 The harvester python script will query all open data endpoints of Brunswick to collect election data from 2000 to today (missing the Bundestagswahl 2005 as not being available)
-```
+```bash
 pip install -r harvester/requirements.txt
 python harvester
 ```

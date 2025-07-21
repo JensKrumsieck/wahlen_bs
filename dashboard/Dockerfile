@@ -6,7 +6,6 @@ RUN npm install -g vite
 
 COPY . .
 
-RUN npm run prepare
 RUN npm ci
 RUN npm run build
 

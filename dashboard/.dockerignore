@@ -1,0 +1,8 @@
+**/.svelte-kit
+**/build
+**/node_modules
+**/.git
+**/.gitignore
+**/Dockerfile*
+README.node_modules
+**/.vscode

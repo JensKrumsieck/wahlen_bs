@@ -1,6 +1,11 @@
-use crate::http::AppContext;
-use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
+use crate::{http::AppContext, Result};
+use axum::{extract::State, routing::get, Json, Router};
 use serde::Serialize;
+
+#[derive(Debug, Serialize, utoipa::ToSchema, PartialEq)]
+pub(crate) struct PartiesResponse<T> {
+    parties: Vec<T>,
+}
 
 #[derive(Debug, Serialize, utoipa::ToSchema, PartialEq)]
 pub(crate) struct Party {
@@ -16,12 +21,11 @@ pub(crate) fn router() -> Router<AppContext> {
 
 #[utoipa::path(get, path = "/party",
 responses(
-    (status = 200, description = "List all parties", body = [Party])
+    (status = 200, description = "List all parties", body = PartiesResponse<Party>)
 ))]
-async fn get_parties(ctx: State<AppContext>) -> Result<Json<Vec<Party>>, StatusCode> {
+async fn get_parties(ctx: State<AppContext>) -> Result<Json<PartiesResponse<Party>>> {
     let parties = sqlx::query_as!(Party, "SELECT * FROM party")
         .fetch_all(&ctx.db)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    Ok(Json(parties))
+        .await?;
+    Ok(Json(PartiesResponse { parties }))
 }

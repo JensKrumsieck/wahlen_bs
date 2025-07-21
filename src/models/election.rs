@@ -1,11 +1,11 @@
 use super::{party::Party, region::RegionVotes, vote::ElectoralVote};
 use crate::{
-    models::{region::Region, vote::VoteTurnout},
     http::AppContext,
+    models::{region::Region, vote::VoteTurnout},
+    Result,
 };
 use axum::{
     extract::{Path, Query, State},
-    http::StatusCode,
     routing::get,
     Json, Router,
 };
@@ -39,11 +39,10 @@ pub(crate) fn router() -> Router<AppContext> {
 responses(
     (status = 200, description = "List all elections", body = [Election])
 ))]
-async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<Vec<Election>>, StatusCode> {
+async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<Vec<Election>>> {
     let elections = sqlx::query_as!(Election, "SELECT * FROM election")
         .fetch_all(&ctx.db)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .await?;
     Ok(Json(elections))
 }
 
@@ -67,15 +66,14 @@ async fn get_election(
     Path(election_id): Path<i64>,
     Query(query): Query<ElectionQuery>,
     State(ctx): State<AppContext>,
-) -> Result<Json<ElectionRegion>, StatusCode> {
+) -> Result<Json<ElectionRegion>> {
     let election = sqlx::query_as!(
         Election,
         "SELECT * FROM election WHERE id = $1",
         election_id
     )
     .fetch_one(&ctx.db)
-    .await
-    .map_err(|_| StatusCode::NOT_FOUND)?;
+    .await?;
 
     let result = sqlx::query!(
         r#"
@@ -98,8 +96,7 @@ async fn get_election(
         query.primary_vote
     )
     .fetch_all(&ctx.db)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .await?;
 
     let mut region_map: HashMap<i64, RegionVotes> = HashMap::new();
     for row in result {

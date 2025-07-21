@@ -11,8 +11,6 @@ RUN npm ci
 RUN npm run build
 
 FROM node:${NODE_VERSION}-alpine
-# for healtcheck
-RUN apt install curl 
 WORKDIR /app
 ENV NODE_ENV=production
 

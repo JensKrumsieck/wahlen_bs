@@ -54,39 +54,41 @@
             <BarY inset={8} data={prediction} x="name" y="value" sort={{ channel: "name" }} fill={(c: { name: string }) => colors[c.name]} />
             <BarY data={trend} x="name" y="value" opacity={0.25} fill={(c: { name: string }) => colors[c.name]} />
         </Plot>
-        <table>
-            <thead>
-                <tr>
-                    <th scope="col"></th>
-                    <th scope="col">CDU</th>
-                    <th scope="col">SPD</th>
-                    <th scope="col">GRÜNE</th>
-                    <th scope="col">LINKE</th>
-                    <th scope="col">FDP</th>
-                    <th scope="col">AfD</th>
-                    <th scope="col">Sonstige</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td> Deutschlandtrend (Umfragen) </td>
-                    {#each trend as party}
+        <div class="overflow-x-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">CDU</th>
+                        <th scope="col">SPD</th>
+                        <th scope="col">GRÜNE</th>
+                        <th scope="col">LINKE</th>
+                        <th scope="col">FDP</th>
+                        <th scope="col">AfD</th>
+                        <th scope="col">Sonstige</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td> Deutschlandtrend (Umfragen) </td>
+                        {#each trend as party}
+                            <td>
+                                {(party.value * 100).toFixed(2)}%
+                            </td>
+                        {/each}
+                    </tr>
+                    <tr>
                         <td>
-                            {(party.value * 100).toFixed(2)}%
+                            Vorhersage ({selectedRegion == 0 ? "Stadt Braunschweig" : regions.find((e) => e.id == selectedRegion).name})
                         </td>
-                    {/each}
-                </tr>
-                <tr>
-                    <td>
-                        Vorhersage ({selectedRegion == 0 ? "Stadt Braunschweig" : regions.find((e) => e.id == selectedRegion).name})
-                    </td>
-                    {#each prediction as party}
-                        <td>
-                            {(party.value * 100).toFixed(2)}%
-                        </td>
-                    {/each}
-                </tr>
-            </tbody>
-        </table>
+                        {#each prediction as party}
+                            <td>
+                                {(party.value * 100).toFixed(2)}%
+                            </td>
+                        {/each}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     {/if}
 </div>

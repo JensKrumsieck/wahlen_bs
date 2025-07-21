@@ -5,7 +5,7 @@
     const { elections, regions } = data;
 </script>
 
-<div class="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl dark:prose-invert mx-auto">
+<div class="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert mx-auto">
     <h2 class="text-lg font-bold tracking-tight">Vorhersage des Wahlergebnisses</h2>
     <Prediction {elections} {regions} />
     <p>

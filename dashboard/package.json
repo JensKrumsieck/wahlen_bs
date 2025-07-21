@@ -3,9 +3,9 @@
 	"private": true,
 	"version": "0.0.1",
 	"engines": {
-		"node": ">= 22.17"
+		"node": ">= 22.11"
 	},
-	"packageManager": "npm@10.9.2",
+	"packageManager": "npm@10.9.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",

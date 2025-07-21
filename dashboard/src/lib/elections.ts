@@ -1,7 +1,6 @@
 import { API_URL, ELECTION_MAP, RELEVANT_PARTIES } from "./config";
 import MLR from 'ml-regression-multivariate-linear';
 import { Polls, Query, Order, DataType } from 'german-election-polls';
-import * as tf from '@tensorflow/tfjs';
 // @ts-ignore
 import results_csv from '$lib/data/results_germany.csv';
 
@@ -183,7 +182,7 @@ export async function getSurveyData() {
     return mean;
 }
 
-export async function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult, backend: "tf" | "mlr") {
+export function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult) {
     let X = bundData.map(row => [
         row.CDU ?? 0,
         row.SPD ?? 0,
@@ -214,8 +213,15 @@ export async function predictResults(regionData: ElectionResult[], bundData: Ele
         predictionData.AfD ?? 0,
     ];
 
-    return backend == "mlr" ? predictMLR(X, Y, x_pred) : await predictTF(X, Y, x_pred);
+    let party = ["CDU", "SPD", "GRÜNE", "LINKE", "FDP", "AfD", "Sonstige"];
 
+    const prediction = predictMLR(X, Y, x_pred);
+    let sum = prediction.reduce((acc, val) => acc + val, 0);
+    prediction.push(1 - sum);
+
+    return prediction.map((value, index) => {
+        return { name: party[index], value: value };
+    });
 }
 
 function predictMLR(X: number[][], Y: number[][], X_pred: number[]): number[] {
@@ -223,26 +229,4 @@ function predictMLR(X: number[][], Y: number[][], X_pred: number[]): number[] {
     const prediction = mlr.predict(X_pred);
 
     return prediction;
-}
-
-async function predictTF(X: number[][], Y: number[][], X_pred: number[]): Promise<number[]> {
-    const tensorX = tf.tensor2d(X);
-    const tensorY = tf.tensor2d(Y);
-
-    const model = tf.sequential();
-    model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [6] }));
-    model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
-    model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
-    model.add(tf.layers.dense({ units: 6 }));
-    model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
-    await model.fit(tensorX, tensorY, {
-        epochs: 500,
-    });
-
-    const prediction = model.predict(tf.tensor2d([X_pred])) as tf.Tensor;
-    const result = await prediction.data() as Float32Array;
-    prediction.dispose();
-    tensorX.dispose();
-    tensorY.dispose();
-    return Array.from(result);
 }

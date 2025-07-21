@@ -24,7 +24,7 @@ export async function get_available_regions(fetch: typeof window.fetch) {
     }
 
     const regions = await response.json();
-    return regions;
+    return regions["regions"];
 }
 
 export interface Election {

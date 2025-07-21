@@ -1,6 +1,6 @@
 use sqlx::SqlitePool;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use wahlen_bs::serve;
+use wahlen_bs::http::serve;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -19,7 +19,6 @@ async fn main() -> anyhow::Result<()> {
 
     let database_url = dotenvy::var("DATABASE_URL")?;
     let db = SqlitePool::connect(&database_url).await?;
-    serve(db).await?;
 
-    Ok(())
+    serve(db).await
 }

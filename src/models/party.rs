@@ -1,4 +1,4 @@
-use crate::AppContext;
+use crate::http::AppContext;
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
 use serde::Serialize;
 

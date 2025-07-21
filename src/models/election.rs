@@ -1,7 +1,7 @@
 use super::{party::Party, region::RegionVotes, vote::ElectoralVote};
 use crate::{
     models::{region::Region, vote::VoteTurnout},
-    AppContext,
+    http::AppContext,
 };
 use axum::{
     extract::{Path, Query, State},
@@ -39,7 +39,7 @@ pub(crate) fn router() -> Router<AppContext> {
 responses(
     (status = 200, description = "List all elections", body = [Election])
 ))]
-async fn get_elections(ctx: State<AppContext>) -> Result<Json<Vec<Election>>, StatusCode> {
+async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<Vec<Election>>, StatusCode> {
     let elections = sqlx::query_as!(Election, "SELECT * FROM election")
         .fetch_all(&ctx.db)
         .await
@@ -66,7 +66,7 @@ responses(
 async fn get_election(
     Path(election_id): Path<i64>,
     Query(query): Query<ElectionQuery>,
-    ctx: State<AppContext>,
+    State(ctx): State<AppContext>,
 ) -> Result<Json<ElectionRegion>, StatusCode> {
     let election = sqlx::query_as!(
         Election,

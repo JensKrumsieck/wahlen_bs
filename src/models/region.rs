@@ -1,6 +1,6 @@
 use super::vote::{ElectoralVote, VoteTurnout};
-use crate::AppContext;
-use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
+use crate::{http::AppContext, Result};
+use axum::{extract::State, routing::get, Json, Router};
 use serde::Serialize;
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
@@ -9,6 +9,11 @@ pub(crate) struct Region {
     pub id: i64,
     #[schema(example = "Östliches Ringgebiet")]
     pub name: String,
+}
+
+#[derive(Debug, Serialize, utoipa::ToSchema)]
+pub(crate) struct RegionsResponse<T> {
+    regions: Vec<T>,
 }
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
@@ -25,12 +30,11 @@ pub(crate) fn router() -> Router<AppContext> {
 
 #[utoipa::path(get, path = "/region",
 responses(
-    (status = 200, description = "List all regions", body = [Region])
+    (status = 200, description = "List all regions", body = RegionsResponse<Region>)
 ))]
-async fn get_regions(ctx: State<AppContext>) -> Result<Json<Vec<Region>>, StatusCode> {
-    let elections = sqlx::query_as!(Region, "SELECT * FROM region")
+async fn get_regions(State(ctx): State<AppContext>) -> Result<Json<RegionsResponse<Region>>> {
+    let regions = sqlx::query_as!(Region, "SELECT * FROM region")
         .fetch_all(&ctx.db)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    Ok(Json(elections))
+        .await?;
+    Ok(Json(RegionsResponse { regions }))
 }

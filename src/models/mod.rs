@@ -1,4 +1,4 @@
-pub mod election;
-pub mod party;
-pub mod region;
-pub mod vote;
+pub(crate) mod election;
+pub(crate) mod party;
+pub(crate) mod region;
+pub(crate) mod vote;

@@ -13,6 +13,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
+struct ElectionsResponse<T> {
+    elections: Vec<T>,
+}
+
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 struct Election {
     #[schema(example = 1)]
     pub id: i64,
@@ -39,11 +44,11 @@ pub(crate) fn router() -> Router<AppContext> {
 responses(
     (status = 200, description = "List all elections", body = [Election])
 ))]
-async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<Vec<Election>>> {
+async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<ElectionsResponse<Election>>> {
     let elections = sqlx::query_as!(Election, "SELECT * FROM election")
         .fetch_all(&ctx.db)
         .await?;
-    Ok(Json(elections))
+    Ok(Json(ElectionsResponse { elections }))
 }
 
 #[derive(Deserialize, utoipa::IntoParams)]

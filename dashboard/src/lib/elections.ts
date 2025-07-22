@@ -13,7 +13,7 @@ export async function get_available_elections(fetch: typeof window.fetch) {
     }
 
     const elections = await response.json();
-    return elections;
+    return elections["elections"];
 }
 
 export async function get_available_regions(fetch: typeof window.fetch) {

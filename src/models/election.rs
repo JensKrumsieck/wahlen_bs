@@ -42,7 +42,7 @@ pub(crate) fn router() -> Router<AppContext> {
 
 #[utoipa::path(get, path = "/election",
 responses(
-    (status = 200, description = "List all elections", body = [Election])
+    (status = 200, description = "List all elections", body = ElectionsResponse<Election>)
 ))]
 async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<ElectionsResponse<Election>>> {
     let elections = sqlx::query_as!(Election, "SELECT * FROM election")

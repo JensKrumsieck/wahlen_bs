@@ -3,6 +3,7 @@ import MLR from 'ml-regression-multivariate-linear';
 import { Polls, Query, Order, DataType } from 'german-election-polls';
 // @ts-ignore
 import results_csv from '$lib/data/results_germany.csv';
+import type { Election, ElectionResult, Result } from "./types";
 
 
 export async function get_available_elections(fetch: typeof window.fetch) {
@@ -25,34 +26,6 @@ export async function get_available_regions(fetch: typeof window.fetch) {
 
     const regions = await response.json();
     return regions["regions"];
-}
-
-export interface Election {
-    id: number;
-    name: string;
-    date: number;
-    region: Region[];
-}
-
-interface Region {
-    id: number;
-    name: string;
-    turnout: Turnout[];
-    votes: Vote[];
-}
-
-interface Turnout {
-    eligible: number,
-    primary_vote: boolean,
-    voted: number,
-    turnout: number
-}
-interface Vote {
-    id: string,
-    name: string,
-    votes: number,
-    primary_vote: boolean,
-    percentage: number
 }
 
 /**
@@ -106,17 +79,6 @@ function getBundResults() {
     }));
     return results_bund;
 }
-
-export type ElectionResult = {
-    name: string;
-    CDU: number;
-    SPD: number;
-    GRÜNE: number;
-    LINKE: number;
-    FDP: number;
-    AfD: number;
-    Sonstige: number;
-};
 
 async function getDawumData(limit: Date) {
     const polls = new Polls();
@@ -230,11 +192,6 @@ function predictMLR(X: number[][], Y: number[][], X_pred: number[]): number[] {
 
     return prediction;
 }
-
-export type Result = {
-    name: string;
-    value: number;
-};
 
 export function toResult(electionResult: ElectionResult): Result[] {
     return [{ name: "CDU", value: electionResult.CDU },

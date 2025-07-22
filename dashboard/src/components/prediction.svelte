@@ -1,9 +1,10 @@
 <script lang="ts">
     import { Jumper } from "svelte-loading-spinners";
-    import { getResultsForRegion, getSurveyData, predictResults, results_bund, toResult, type Election, type ElectionResult, type Result } from "$lib/elections";
+    import { getResultsForRegion, getSurveyData, predictResults, results_bund, toResult } from "$lib/elections";
     import { AxisX, AxisY, BarY, Plot } from "svelteplot";
     import { colors } from "$lib/config";
     import { onMount } from "svelte";
+    import { type Election, type ElectionResult, type Result } from "$lib/types";
 
     export let elections: Election[];
     export let regions: any[];

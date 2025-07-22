@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Jumper } from "svelte-loading-spinners";
-    import { getResultsForRegion, getSurveyData, predictResults, results_bund, type Election, type ElectionResult } from "$lib/elections";
+    import { getResultsForRegion, getSurveyData, predictResults, results_bund, toResult, type Election, type ElectionResult, type Result } from "$lib/elections";
     import { AxisX, AxisY, BarY, Plot } from "svelteplot";
     import { colors } from "$lib/config";
     import { onMount } from "svelte";
@@ -8,31 +8,20 @@
     export let elections: Election[];
     export let regions: any[];
 
-    type Result = {
-        name: string;
-        value: number;
-    };
-
     let predictionData: ElectionResult;
+    let lastElection: Result[];
     let trend: Result[];
     let prediction: Result[];
 
     onMount(async () => {
         predictionData = await getSurveyData();
-        trend = [
-            { name: "CDU", value: predictionData.CDU },
-            { name: "SPD", value: predictionData.SPD },
-            { name: "GRÜNE", value: predictionData.GRÜNE },
-            { name: "LINKE", value: predictionData.LINKE },
-            { name: "FDP", value: predictionData.FDP },
-            { name: "AfD", value: predictionData.AfD },
-            { name: "Sonstige", value: 1 - (predictionData.CDU + predictionData.SPD + predictionData.GRÜNE + predictionData.LINKE + predictionData.FDP + predictionData.AfD) },
-        ];
+        trend = toResult(predictionData);
     });
     let selectedRegion = 0;
 
     $: regionData = getResultsForRegion(selectedRegion, elections);
     $: if (predictionData && regionData) {
+        lastElection = toResult(regionData.find((d) => d.name == "BTW2025") || regionData[0]);
         prediction = predictResults(regionData, results_bund, predictionData);
     }
 </script>
@@ -82,6 +71,16 @@
                             Vorhersage ({selectedRegion == 0 ? "Stadt Braunschweig" : regions.find((e) => e.id == selectedRegion).name})
                         </td>
                         {#each prediction as party}
+                            <td>
+                                {(party.value * 100).toFixed(2)}%
+                            </td>
+                        {/each}
+                    </tr>
+                    <tr>
+                        <td>
+                            Bundestagswahl 2025 ({selectedRegion == 0 ? "Stadt Braunschweig" : regions.find((e) => e.id == selectedRegion).name})
+                        </td>
+                        {#each lastElection as party}
                             <td>
                                 {(party.value * 100).toFixed(2)}%
                             </td>

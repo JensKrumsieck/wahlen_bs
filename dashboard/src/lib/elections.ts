@@ -133,7 +133,7 @@ async function getDawumData(limit: Date) {
 
 export async function getSurveyData() {
     let now = Date.now();
-    let limit = new Date(now - 1000 * 60 * 60 * 24 * 7);
+    let limit = new Date(now - 1000 * 60 * 60 * 24 * 14);
     let dawum = await getDawumData(limit);
 
     let results: ElectionResult[] = [];
@@ -229,4 +229,19 @@ function predictMLR(X: number[][], Y: number[][], X_pred: number[]): number[] {
     const prediction = mlr.predict(X_pred);
 
     return prediction;
+}
+
+export type Result = {
+    name: string;
+    value: number;
+};
+
+export function toResult(electionResult: ElectionResult): Result[] {
+    return [{ name: "CDU", value: electionResult.CDU },
+    { name: "SPD", value: electionResult.SPD },
+    { name: "GRÜNE", value: electionResult.GRÜNE },
+    { name: "LINKE", value: electionResult.LINKE },
+    { name: "FDP", value: electionResult.FDP },
+    { name: "AfD", value: electionResult.AfD },
+    { name: "Sonstige", value: 1 - (electionResult.CDU + electionResult.SPD + electionResult.GRÜNE + electionResult.LINKE + electionResult.FDP + electionResult.AfD) },]
 }

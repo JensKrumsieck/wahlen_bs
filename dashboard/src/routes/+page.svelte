@@ -11,6 +11,6 @@
     <p>
         Die Vorhersage des Wahlergebnisses basiert auf einer Multivariaten Linearen Regression (MLR), bei der die Ergebnisse der entsprechenden Region mit den bundesweiten Ergebnissen in Relation gesetzt werden. Verwendet werden hier die Daten der
         Wahlen seit 2000 mit Ausnahme der Bundestagswahl 2005 (Die Daten fehlen im Portal der Stadt Braunschweig). Die Daten des Deutschlandtrends werden vom <a href="https://dawum.de">DAWUM</a> bezogen. Hier wird ein ungewichteter Mittelwert der Umfragen
-        der letzten 7 Tage verwendet.
+        der letzten 14 Tage verwendet.
     </p>
 </div>

@@ -34,5 +34,10 @@
 	},
 	"dependencies": {
 		"svelteplot": "^0.3.7"
+	},
+	"optionalDependencies": {
+		"@rollup/rollup-linux-x64-gnu": "^4.46.0",
+		"@rollup/rollup-linux-x64-musl": "^4.46.0",
+		"@rollup/rollup-win32-x64-msvc": "^4.46.0"
 	}
 }

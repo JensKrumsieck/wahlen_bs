@@ -1,7 +1,13 @@
 <script lang="ts">
 	import "../app.css";
 
+	let showMenu = $state(false);
 	let { children } = $props();
+
+	const navItems = [
+		{ href: "/", label: "Wahlvorhersage" },
+		{ href: "/timeline", label: "Zeitlicher Verlauf" },
+	];
 </script>
 
 <svelte:head>
@@ -9,10 +15,36 @@
 </svelte:head>
 
 <header class="bg-[#00a646] p-2.5">
-	<div class="container container-sm mx-auto flex justify-between items-center">
-		<h1 class="font-black text-xl tracking-tight">Wahlanalyse</h1>
-		<a href="https://github.com/JensKrumsieck/wahlen_bs" target="_blank" class="hover"><img src="github.svg" alt="GitHub" class="w-5" /></a>
-	</div>
+	<nav class="z-20">
+		<div class="container container-sm mx-auto flex justify-between items-center">
+			<a href="/" class="font-black text-xl tracking-tight">Wahlanalyse</a>
+			<button class="md:hidden p-2" aria-label="Open menu" onclick={() => (showMenu = !showMenu)}>
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+				</svg>
+			</button>
+			<div class="hidden md:flex items-center space-x-4">
+				{#each navItems as item}
+					<a href={item.href} class="hover font-bold">{item.label}</a>
+				{/each}
+				<a href="https://github.com/JensKrumsieck/wahlen_bs" target="_blank" class="hover">
+					<img src="github.svg" alt="GitHub" class="w-5" />
+				</a>
+			</div>
+		</div>
+		{#if showMenu}
+			<div class="md:hidden bg-[#00a646] px-4 py-2 flex flex-col space-y-2">
+				{#each navItems as item}
+					<a href={item.href} class="hover flex items-center font-bold">
+						{item.label}
+					</a>
+				{/each}
+				<a href="https://github.com/JensKrumsieck/wahlen_bs" target="_blank" class="hover flex items-center">
+					<img src="github.svg" alt="GitHub" class="w-5 mr-2" /> GitHub
+				</a>
+			</div>
+		{/if}
+	</nav>
 </header>
 <div class="dark:bg-gray-800 min-h-screen px-2.5">
 	<article class="pt-5">

@@ -40,7 +40,7 @@
                 <Line data={regionData} x={parseDate} y={party} stroke={colors[party]} strokeWidth={3} text={party} marker="dot" curve="linear" />
                 <Pointer data={regionData} x={parseDate} y={party}>
                     {#snippet children({ data })}
-                        <Text {data} text={(c) => `${party}: ${((c as any)[party] * 100)?.toFixed(2)}%`} x={parseDate} y={party} dy={10} fontSize={15} />
+                        <Text {data} text={(c) => `${party}: ${((c as any)[party] * 100)?.toFixed(2)}% (${c.name})`} x={parseDate} y={party} dy={10} fontSize={15} />
                     {/snippet}
                 </Pointer>
             {/each}

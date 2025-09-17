@@ -1,4 +1,5 @@
 PRAGMA foreign_keys = ON;
+PRAGMA encoding="UTF-8";
 
 CREATE TABLE party (
         id TEXT NOT NULL PRIMARY KEY,
@@ -27,7 +28,7 @@ INSERT INTO region (id, name) VALUES
         (222, "Südwest"),
         (310, "Westliches Ringgebiet"),
         (321, "Lehndorf-Watenbüttel"),
-        (322, "Nördlicher Schunter-/Okeraue"),
+        (322, "Nördliche Schunter-/Okeraue"),
         (330, "Nordstadt-Schunteraue");
 
 CREATE TABLE vote (

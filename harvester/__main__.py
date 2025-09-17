@@ -24,7 +24,7 @@ check = db.execute(
     "SELECT name FROM sqlite_master WHERE type='table' AND name='election'"
 )
 if not check.fetchone():
-    with open("db/init.sql") as f:
+    with open("db/init.sql", "r", encoding="utf-8") as f:
         cursor = db.cursor()
         cursor.executescript(f.read())
         db.commit()

@@ -11,9 +11,9 @@
     let geoJson_data = JSON.parse(geoJson);
     let selectedElectionId = 1;
 
-    const width = 600;
-    const height = 600;
-    const projection = geoMercator().fitSize([width, height], geoJson_data);
+    let width = 600;
+    let height = 600;
+    $: projection = geoMercator().fitSize([width, height], geoJson_data);
 
     type FeatureWithProperties = {
         properties: any;
@@ -49,20 +49,23 @@
         <option value={election.id}>{election.name} {election.date}</option>
     {/each}
 </select>
+
 {#if !loaded}
     <Jumper />
 {:else}
-    <Plot
-        {height}
-        projection={{ type: () => projection }}
-        color={{
-            scheme: "greens",
-            legend: true,
-            label: " (%)",
-            n: 5,
-            type: "linear",
-        }}
-    >
-        <Geo data={mappedRegions} fill={(d) => d.properties.dataValue} stroke="black" strokeWidth={1} title={(d) => `${d.properties.BEZNAM}: ${d.properties.dataValue.toFixed(2)} %`} />
-    </Plot>
+    <div bind:clientWidth={width}>
+        <Plot
+            {height}
+            projection={{ type: () => projection }}
+            color={{
+                scheme: "greens",
+                legend: true,
+                label: " (%)",
+                n: 5,
+                type: "linear",
+            }}
+        >
+            <Geo data={mappedRegions} fill={(d) => d.properties.dataValue} stroke="black" strokeWidth={1} title={(d) => `${d.properties.BEZNAM}: ${d.properties.dataValue.toFixed(2)} %`} />
+        </Plot>
+    </div>
 {/if}

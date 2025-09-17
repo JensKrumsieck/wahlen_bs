@@ -35,6 +35,7 @@ dates = requests.get(dates_url).json()["termine"]
 dates = [date for date in dates
          if datetime.datetime.strptime(date["date"], "%d.%m.%Y").year >= 2018 and not "meister" in date["name"]
          or date["name"].startswith("Europawahl") and datetime.datetime.strptime(date["date"], "%d.%m.%Y").year >= 2000
+         or date["name"].startswith("Kommunalwahlen") and datetime.datetime.strptime(date["date"], "%d.%m.%Y").year != 2016 # 2016 not available
          or datetime.datetime.strptime(date["date"], "%d.%m.%Y").year < 2011 and datetime.datetime.strptime(date["date"], "%d.%m.%Y").year >= 2000]
 
 urls = [{"name": date["name"], "url": urljoin(
@@ -54,7 +55,6 @@ open_data = [
     }
     for url in urls
 ]
-
 for item in open_data:
     election_selector = item["url"]
     data = requests.get(election_selector).json()

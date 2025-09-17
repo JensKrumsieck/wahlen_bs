@@ -22,6 +22,8 @@
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.0.0",
+		"@types/d3-geo": "^3.1.0",
+		"geojson-flatten": "^1.1.1",
 		"german-election-polls": "^1.1.7",
 		"mathjs": "^14.5.3",
 		"ml-regression-multivariate-linear": "^2.0.4",
@@ -33,6 +35,8 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
-		"svelteplot": "^0.3.7"
+		"svelteplot": "^0.3.7",
+		"topojson-client": "^3.1.0",
+		"world-atlas": "^2.0.2"
 	}
 }

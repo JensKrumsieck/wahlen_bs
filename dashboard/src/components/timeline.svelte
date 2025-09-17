@@ -32,7 +32,7 @@
     {#if !loaded}
         <Jumper />
     {:else}
-        <Plot x={{ domain: [new Date(2007, 0, 1), new Date(2025, 0, 1)], interval: "2 years" }} y={{ percent: true, domain: [0, 0.45] }}>
+        <Plot x={{ domain: [new Date(2006, 0, 1), new Date(2025, 0, 1)], interval: "2 years" }} y={{ percent: true, domain: [0, 0.45] }}>
             <AxisX title="" />
             <AxisY title="" />
 

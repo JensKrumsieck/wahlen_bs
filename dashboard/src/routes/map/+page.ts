@@ -8,10 +8,8 @@ export async function load({ fetch }: LoadEvent) {
 
     let electionData: Election[] = [];
     for (const election of elections) {
-        if (["Bundestagswahl", "Europawahl", "Landtagswahl"].includes(election.name)) {
-            const response = await fetch(API_URL + `/election/${election.id}?primary_vote=false`);
-            electionData.push(await response.json());
-        }
+        const response = await fetch(API_URL + `/election/${election.id}?primary_vote=false`);
+        electionData.push(await response.json());
     }
 
     const regions = await get_available_regions(fetch);

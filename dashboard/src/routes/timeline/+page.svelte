@@ -8,4 +8,5 @@
     <h2 class="text-lg font-bold tracking-tight">Zeitlicher Verlauf der Wahlergebnisse</h2>
     <p>In dieser Ansicht können die Ergebnisse der vergangenen Wahlen in Braunschweig im zeitlichen Verlauf betrachtet werden. Kommunalwahlen werden derzeit nicht berücksichtigt.</p>
     <Timeline {elections} {regions} />
+    <p>BTW: Bundestagswahl, LTW: Landtagswahl, KoW: Kommunalwahlen, EUW: Europawahl</p>
 </div>

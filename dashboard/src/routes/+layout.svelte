@@ -7,6 +7,7 @@
 	const navItems = [
 		{ href: "/", label: "Wahlvorhersage" },
 		{ href: "/timeline", label: "Zeitlicher Verlauf" },
+		{ href: "/map", label: "Kartenansicht" },
 	];
 </script>
 

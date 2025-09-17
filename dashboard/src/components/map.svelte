@@ -35,7 +35,6 @@
         dict[r.id] = getResultsForRegion(r.id, elections).find((e) => e.name == `${ELECTION_MAP[(selectedElection?.name as keyof typeof ELECTION_MAP) || "Bundestagswahl"]}${selectedElection?.date}`);
         return dict;
     }, {}) as Record<number, ElectionResult>;
-
     $: mappedRegions = geoJson_data.features.map((feature: FeatureWithProperties) => ({
         ...feature,
         properties: {
@@ -76,5 +75,19 @@
         >
             <Geo data={mappedRegions} fill={(d) => d.properties.dataValue} stroke="black" strokeWidth={1} title={(d) => `${d.properties.BEZNAM}: ${d.properties.dataValue.toFixed(2)} %`} />
         </Plot>
+    </div>
+    <div class="mt-5">
+        Wahlergebnis für <span class="font-bold">{selectedParty}</span> ({selectedElection?.name}
+        {selectedElection?.date})
+        <table>
+            <tbody>
+                {#each mappedRegions as r}
+                    <tr>
+                        <td>{r.properties.BEZNAM}</td>
+                        <td>{r.properties.dataValue.toFixed(2)} %</td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
     </div>
 {/if}

@@ -25,7 +25,7 @@
 			</button>
 			<div class="hidden md:flex items-center space-x-4">
 				{#each navItems as item}
-					<a href={item.href} class="hover:text-zinc-700 font-bold">{item.label}</a>
+					<a href={item.href} class="font-bold hover:bg-lime-500 p-2">{item.label}</a>
 				{/each}
 				<a href="https://github.com/JensKrumsieck/wahlen_bs" target="_blank" class="hover">
 					<img src="github.svg" alt="GitHub" class="w-5" />
@@ -35,7 +35,7 @@
 		{#if showMenu}
 			<div class="md:hidden bg-[#00a646] px-4 py-2 flex flex-col space-y-2">
 				{#each navItems as item}
-					<a href={item.href} class="hover flex items-center font-bold">
+					<a href={item.href} class="hover flex items-center font-bold hover:bg-lime-500 p-2">
 						{item.label}
 					</a>
 				{/each}

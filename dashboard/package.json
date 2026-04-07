@@ -27,7 +27,7 @@
 		"german-election-polls": "^1.1.7",
 		"mathjs": "^14.5.3",
 		"ml-regression-multivariate-linear": "^2.0.4",
-		"svelte": "5.36.13",
+		"svelte": "5.53.5",
 		"svelte-check": "^4.0.0",
 		"svelte-loading-spinners": "^0.3.6",
 		"tailwindcss": "^4.0.0",

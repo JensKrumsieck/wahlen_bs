@@ -15,6 +15,8 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     - uses: actions/setup-node@v4
+      with:
+        node-version: 22
     - run: npm ci
       working-directory: dashboard
     - run: npm run build      

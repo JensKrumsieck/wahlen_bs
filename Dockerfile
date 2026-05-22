@@ -1,4 +1,4 @@
-FROM rust:1.85-bullseye as builder
+FROM rust:1.85-bullseye AS builder
 WORKDIR /app
 ENV DATABASE_URL=sqlite:///app/db/elections.db
 

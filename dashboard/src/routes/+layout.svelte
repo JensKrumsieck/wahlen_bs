@@ -4,7 +4,7 @@
 	import * as Swetrix from "swetrix";
 
 	onMount(() => {
-		Swetrix.init("kAGRjT0W9Brg", {
+		Swetrix.init("wiMXxZm1S4Ep", {
 			devMode: dev,
 			disabled: dev,
 			apiURL: "https://api.analytics.jenskrumsieck.de/log",

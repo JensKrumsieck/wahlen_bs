@@ -124,5 +124,16 @@
 				href="https://jenskrumsieck.de">Dr. Jens Krumsieck</a
 			>.
 		</div>
+		<div class="mt-2 text-green-500">
+			<a
+				class="underline"
+				target="_blank"
+				href="https://jenskrumsieck.de/privacy">Datenschutzerklärung</a
+			> | <a
+				class="underline"
+				target="_blank"
+				href="https://jenskrumsieck.de/impressum">Impressum</a
+			>
+		</div>
 	</footer>
 </div>

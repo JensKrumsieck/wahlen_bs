@@ -124,7 +124,7 @@
 				href="https://jenskrumsieck.de">Dr. Jens Krumsieck</a
 			>.
 		</div>
-		<div class="mt-2 text-green-500">
+		<div class="mt-2 dark:text-gray-400 text-gray-600">
 			<a
 				class="underline"
 				target="_blank"

@@ -143,38 +143,43 @@
     </select>
 
     <h3>Sitzverteilung {selectedParty} nach Hare-Niemeyer</h3>
-    <table class="w-full text-sm text-left">
-        <thead>
-            <tr>
-                <th>GWB</th>
-                <th>Wähler</th>
-                <th>{selectedParty} %</th>
-                <th>{selectedParty}</th>
-                <th>Anteil</th>
-                <th>Sitze (roh)</th>
-                <th>Sitze</th>
-                <th>Rest</th>
-                <th>Bonus</th>
-                <th>GWB Sitze</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each hareNiemeyerResults as r}
+
+    <div class="overflow-x-scroll">
+        <table class="w-full text-sm text-left">
+            <thead>
                 <tr>
-                    <td>{r.key}</td>
-                    <td>{r.waehler}</td>
-                    <td>{(r.partyWaehler / r.waehler * 100).toFixed(2)}%</td>
-                    <td>{r.partyWaehler}</td>
-                    <td>{(r.anteil * 100).toFixed(2)}%</td>
-                    <td>{r.raw.toFixed(4)}</td>
-                    <td>{r.floor}</td>
-                    <td>{r.remainder.toFixed(4)}</td>
-                    <td>{r.bonus}</td>
-                    <td><strong>{r.sitze}</strong></td>
+                    <th>GWB</th>
+                    <th>Sitze</th>
+                    <th>Wähler</th>
+                    <th>{selectedParty} %</th>
+                    <th>{selectedParty}</th>
+                    <th>Anteil</th>
+                    <th>Sitze (roh)</th>
+                    <th>Sitze</th>
+                    <th>Rest</th>
+                    <th>Bonus</th>
+                    <th>GWB Sitze</th>
                 </tr>
-            {/each}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {#each hareNiemeyerResults as r}
+                    <tr>
+                        <td>{r.key}</td>
+                        <td><strong>{r.sitze}</strong></td>
+                        <td>{r.waehler}</td>
+                        <td>{((r.partyWaehler / r.waehler) * 100).toFixed(2)}%</td>
+                        <td>{r.partyWaehler}</td>
+                        <td>{(r.anteil * 100).toFixed(2)}%</td>
+                        <td>{r.raw.toFixed(4)}</td>
+                        <td>{r.floor}</td>
+                        <td>{r.remainder.toFixed(4)}</td>
+                        <td>{r.bonus}</td>
+                        <td><strong>{r.sitze}</strong></td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+    </div>
 
     <p>Die Vorhersage erfolgt basierend der Bezirkvorhersagen, der Zahl der Wahlberechtigten von 2021 und der Wahlbeteiligung der letzten Kommunalwahl. Die Anzahl der Sitze wird nach dem Hare-Niemeyer-Verfahren berechnet.</p>
 

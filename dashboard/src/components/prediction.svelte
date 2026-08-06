@@ -101,7 +101,7 @@
       kann es grundsätzlich nicht abbilden.
     </p>
     <div class="overflow-x-scroll">
-      <table>
+      <table class="min-w-max">
         <thead>
           <tr>
             <th scope="col"></th>

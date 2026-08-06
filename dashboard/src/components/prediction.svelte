@@ -1,10 +1,10 @@
 <script lang="ts">
     import { Jumper } from "svelte-loading-spinners";
     import { getResultsForRegion, getSurveyData, predictResults, results_bund, toResult } from "$lib/elections";
-    import { AxisX, AxisY, BarY, Plot } from "svelteplot";
+    import { AxisX, AxisY, BarY, Plot, RuleX } from "svelteplot";
     import { colors } from "$lib/config";
     import { onMount } from "svelte";
-    import { type Election, type ElectionResult, type Result } from "$lib/types";
+    import { type Election, type ElectionResult, type Result, type PredictionResult } from "$lib/types";
 
     export let elections: Election[];
     export let regions: any[];
@@ -12,7 +12,7 @@
     let predictionData: ElectionResult;
     let lastElection: Result[];
     let trend: Result[];
-    let prediction: Result[];
+    let prediction: PredictionResult[];
 
     onMount(async () => {
         predictionData = await getSurveyData();
@@ -43,7 +43,13 @@
             <AxisY title="" />
             <BarY inset={8} data={prediction} x="name" y="value" sort={{ channel: "name" }} fill={(c: { name: string }) => colors[c.name]} />
             <BarY data={trend} x="name" y="value" opacity={0.25} fill={(c: { name: string }) => colors[c.name]} />
+            <RuleX data={prediction.filter((p) => p.error != null)} x="name" y1={(p: PredictionResult) => p.value - (p.error ?? 0)} y2={(p: PredictionResult) => p.value + (p.error ?? 0)} strokeWidth={2} />
         </Plot>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+            Die Fehlerbalken zeigen den mittleren absoluten Fehler je Partei unter Kreuzvalidierung (Leave-one-out) — er reicht von rund 0,5 Prozentpunkten (AfD) bis knapp 1,8 (GRÜNE), ein einheitlicher Wert wäre irreführend. Für
+            "Sonstige" gibt es keinen eigenen Fehlerwert, da der Anteil als Rest berechnet wird. Zu beachten: Das Modell ist auf Bundestags- und Europawahlen trainiert und auf eine Kommunalwahl angewendet — lokale Listen wie BIBS kann es
+            grundsätzlich nicht abbilden, und die Wahlbeteiligung ist bei Kommunalwahlen (drei Stimmen pro Wähler) nicht direkt mit der im Training vergleichbar.
+        </p>
         <div class="overflow-x-scroll">
             <table>
                 <thead>
@@ -63,7 +69,7 @@
                         <td> Deutschlandtrend (Umfragen) </td>
                         {#each trend as party}
                             <td>
-                                {(party.value * 100).toFixed(2)}%
+                                {(party.value * 100).toFixed(1)}%
                             </td>
                         {/each}
                     </tr>
@@ -73,7 +79,15 @@
                         </td>
                         {#each prediction as party}
                             <td>
-                                {(party.value * 100).toFixed(2)}%
+                                {(party.value * 100).toFixed(1)}%
+                            </td>
+                        {/each}
+                    </tr>
+                    <tr>
+                        <td>± Unsicherheit (LOOCV)</td>
+                        {#each prediction as party}
+                            <td>
+                                {party.error != null ? "± " + (party.error * 100).toFixed(1) + "%" : "–"}
                             </td>
                         {/each}
                     </tr>
@@ -83,7 +97,7 @@
                         </td>
                         {#each lastElection as party}
                             <td>
-                                {(party.value * 100).toFixed(2)}%
+                                {(party.value * 100).toFixed(1)}%
                             </td>
                         {/each}
                     </tr>

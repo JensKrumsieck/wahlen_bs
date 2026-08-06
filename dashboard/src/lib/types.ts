@@ -3,6 +3,11 @@ export type Result = {
     value: number;
 };
 
+/** A Result with its per-party leave-one-out cross-validation error (fraction, not pp). Undefined for residual entries like "Sonstige". */
+export type PredictionResult = Result & {
+    error?: number;
+};
+
 
 export type ElectionResult = {
     name: string;

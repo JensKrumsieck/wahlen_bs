@@ -3,7 +3,7 @@ import { multiply, transpose, lusolve } from 'mathjs';
 import { Polls, Query, Order, DataType } from 'german-election-polls';
 // @ts-ignore
 import results_csv from '$lib/data/results_germany.csv';
-import type { Election, ElectionResult, Result } from "./types";
+import type { Election, ElectionResult, Result, PredictionResult } from "./types";
 
 
 export async function get_available_elections(fetch: typeof window.fetch) {
@@ -186,7 +186,7 @@ function mode(values: number[]): number {
  * leave-one-out cross-validation — partner selection happens on the 8
  * training points, never touching the held-out point. See CLAUDE.md 3.3.
  */
-function selectPredictors(targetIdx: number, X: number[][], Y: number[][], numParties: number): number[] {
+function selectPredictors(targetIdx: number, X: number[][], Y: number[][], numParties: number): { predictors: number[]; error: number } {
     const n = X.length;
     const yTarget = Y.map(row => row[targetIdx]);
     const ownOnlyError = looMAE(X.map(row => [row[targetIdx]]), yTarget);
@@ -213,10 +213,12 @@ function selectPredictors(targetIdx: number, X: number[][], Y: number[][], numPa
     }
     const crossError = outerErrors.reduce((a, b) => a + b, 0) / n;
 
-    return crossError < ownOnlyError ? [targetIdx, mode(chosenPartners)] : [targetIdx];
+    return crossError < ownOnlyError
+        ? { predictors: [targetIdx, mode(chosenPartners)], error: crossError }
+        : { predictors: [targetIdx], error: ownOnlyError };
 }
 
-export function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult) {
+export function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult): PredictionResult[] {
     const parties = RELEVANT_PARTIES;
 
     const bundByName = new Map(bundData.map(row => [row.name, row]));
@@ -232,17 +234,21 @@ export function predictResults(regionData: ElectionResult[], bundData: ElectionR
     const Y = paired.map(({ region }) => parties.map(p => (region as any)[p] ?? 0));
     const x_pred = parties.map(p => (predictionData as any)[p] ?? 0);
 
-    const prediction = parties.map((_, targetIdx) => {
-        const predictors = selectPredictors(targetIdx, X, Y, parties.length);
+    const fits = parties.map((_, targetIdx) => {
+        const { predictors, error } = selectPredictors(targetIdx, X, Y, parties.length);
         const yTarget = Y.map(row => row[targetIdx]);
         const coefs = fitOLS(X.map(row => predictors.map(p => row[p])), yTarget);
-        return predictOLS(coefs, predictors.map(p => x_pred[p]));
+        const value = predictOLS(coefs, predictors.map(p => x_pred[p]));
+        return { value, error };
     });
 
-    const sum = prediction.reduce((acc, val) => acc + val, 0);
-    prediction.push(1 - sum);
+    const sum = fits.reduce((acc, fit) => acc + fit.value, 0);
 
-    return [...parties, "Sonstige"].map((name, index) => ({ name, value: prediction[index] }));
+    return [
+        ...parties.map((name, index) => ({ name, value: fits[index].value, error: fits[index].error })),
+        // Sonstige is the residual 1 − Σ(6 Parteien); it has no OLS fit of its own, so no LOOCV error.
+        { name: "Sonstige", value: 1 - sum },
+    ];
 }
 
 export function toResult(electionResult: ElectionResult): Result[] {

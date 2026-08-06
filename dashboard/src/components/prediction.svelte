@@ -37,8 +37,12 @@
   let predictionError: string | null = null;
 
   onMount(async () => {
-    predictionData = await getSurveyData();
-    trend = toResult(predictionData);
+    try {
+      predictionData = await getSurveyData();
+      trend = toResult(predictionData);
+    } catch (e) {
+      predictionError = e instanceof Error ? e.message : String(e);
+    }
   });
   let selectedRegion = 0;
 

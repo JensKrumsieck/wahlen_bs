@@ -1,6 +1,7 @@
 import { API_URL, ELECTION_MAP, RELEVANT_PARTIES } from "./config";
 import { multiply, transpose, lusolve } from 'mathjs';
 import { Polls, Query, Order, DataType } from 'german-election-polls';
+import type { Survey } from 'german-election-polls/lib/models/Survey';
 // @ts-ignore
 import results_csv from '$lib/data/results_germany.csv';
 import type { Election, ElectionResult, Result, PredictionResult } from "./types";
@@ -80,38 +81,57 @@ function getBundResults() {
     return results_bund;
 }
 
-async function getDawumData(limit: Date) {
+const MIN_SURVEYS = 3;
+// Progressively widened windows (days) -- stop at the first that yields at least
+// MIN_SURVEYS. Keeps the normal case at 14 days, only reaches further back when
+// polling is sparse (e.g. summer break, no upcoming election).
+const SURVEY_WINDOW_DAYS = [14, 21, 28, 42, 60, 90];
+
+async function getDawumSurveys(): Promise<{ surveys: Survey[]; windowDays: number }> {
     const polls = new Polls();
     await polls.update();
-    const query = polls.select([
+
+    for (const windowDays of SURVEY_WINDOW_DAYS) {
+        const limit = new Date(Date.now() - 1000 * 60 * 60 * 24 * windowDays);
+        const { surveys } = await polls.select([
+            Query.include([DataType.Surveys]),
+            Query.Survey.Release.isGreater(limit),
+            Query.Survey.Parliament.Shortcut.is(['Bundestag']),
+            Query.Survey.Sort.allResults(Order.Desc),
+        ]);
+        if (surveys.length >= MIN_SURVEYS) {
+            return { surveys, windowDays };
+        }
+    }
+
+    // Widest window still didn't reach MIN_SURVEYS -- return whatever we have
+    // (possibly empty) rather than silently looping forever.
+    const widest = SURVEY_WINDOW_DAYS[SURVEY_WINDOW_DAYS.length - 1];
+    const limit = new Date(Date.now() - 1000 * 60 * 60 * 24 * widest);
+    const { surveys } = await polls.select([
         Query.include([DataType.Surveys]),
         Query.Survey.Release.isGreater(limit),
         Query.Survey.Parliament.Shortcut.is(['Bundestag']),
-        Query.Survey.Sort.byParticipants(Order.Asc),
         Query.Survey.Sort.allResults(Order.Desc),
     ]);
-    return await query;
+    return { surveys, windowDays: widest };
 }
 
-export async function getSurveyData() {
-    let now = Date.now();
-    let limit = new Date(now - 1000 * 60 * 60 * 24 * 14);
-    let dawum = await getDawumData(limit);
-
-    let results: ElectionResult[] = [];
-    for (const survey of dawum.surveys) {
-        const CDU = survey.results.find(r => r.party.shortcut === 'CDU/CSU')?.result ?? 0;
-        const SPD = survey.results.find(r => r.party.shortcut === 'SPD')?.result ?? 0;
-        const GRÜNE = survey.results.find(r => r.party.shortcut === 'Grüne')?.result ?? 0;
-        const LINKE = survey.results.find(r => r.party.shortcut === 'Linke')?.result ?? 0;
-        const FDP = survey.results.find(r => r.party.shortcut === 'FDP')?.result ?? 0;
-        const AfD = survey.results.find(r => r.party.shortcut === 'AfD')?.result ?? 0;
-        results.push({
-            name: survey.institute.name,
-            CDU, SPD, GRÜNE, LINKE, FDP, AfD,
-            Sonstige: 100 - (CDU + SPD + GRÜNE + LINKE + FDP + AfD),
-        });
+export async function getSurveyData(): Promise<ElectionResult> {
+    const { surveys, windowDays } = await getDawumSurveys();
+    if (surveys.length === 0) {
+        throw new Error("Keine aktuellen Dawum-Umfragen gefunden (auch nach Ausweitung auf 90 Tage)");
     }
+
+    // Weight by sample size (Fallzahl) and recency within the window used (Aktualität) --
+    // larger and newer surveys count more, but nothing is weighted to zero.
+    const now = Date.now();
+    const weightOf = (s: Survey) => {
+        const ageDays = (now - s.release.getTime()) / (1000 * 60 * 60 * 24);
+        const recency = Math.max(0.2, 1 - ageDays / windowDays);
+        return (s.participants ?? 1) * recency;
+    };
+    const totalWeight = surveys.reduce((sum, s) => sum + weightOf(s), 0);
 
     let mean: ElectionResult = {
         name: "Durchschnitt",
@@ -124,23 +144,18 @@ export async function getSurveyData() {
         Sonstige: 0,
     };
 
-    for (const result of results) {
-        mean.CDU += result.CDU;
-        mean.SPD += result.SPD;
-        mean.GRÜNE += result.GRÜNE;
-        mean.LINKE += result.LINKE;
-        mean.FDP += result.FDP;
-        mean.AfD += result.AfD;
-        mean.Sonstige += result.Sonstige;
+    for (const survey of surveys) {
+        const weight = weightOf(survey) / totalWeight;
+        mean.CDU += weight * (survey.results.find(r => r.party.shortcut === 'CDU/CSU')?.result ?? 0) / 100;
+        mean.SPD += weight * (survey.results.find(r => r.party.shortcut === 'SPD')?.result ?? 0) / 100;
+        mean.GRÜNE += weight * (survey.results.find(r => r.party.shortcut === 'Grüne')?.result ?? 0) / 100;
+        mean.LINKE += weight * (survey.results.find(r => r.party.shortcut === 'Linke')?.result ?? 0) / 100;
+        mean.FDP += weight * (survey.results.find(r => r.party.shortcut === 'FDP')?.result ?? 0) / 100;
+        mean.AfD += weight * (survey.results.find(r => r.party.shortcut === 'AfD')?.result ?? 0) / 100;
     }
-
-    mean.CDU /= results.length * 100;
-    mean.SPD /= results.length * 100;
-    mean.GRÜNE /= results.length * 100;
-    mean.LINKE /= results.length * 100;
-    mean.FDP /= results.length * 100;
-    mean.AfD /= results.length * 100;
-    mean.Sonstige /= results.length * 100;
+    // Residual, not a weighted average of each survey's own "Sonstige" line -- keeps this
+    // consistent with how Sonstige is defined everywhere else (see toResult/predictResults).
+    mean.Sonstige = 1 - (mean.CDU + mean.SPD + mean.GRÜNE + mean.LINKE + mean.FDP + mean.AfD);
 
     return mean;
 }

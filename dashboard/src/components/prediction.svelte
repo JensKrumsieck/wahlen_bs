@@ -120,12 +120,12 @@
           <tr class="bg-gray-50 dark:bg-gray-800">
             <th
               scope="col"
-              class="!pl-3 px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400"
+              class="pl-3! px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400"
             ></th>
             {#each RELEVANT_PARTIES.concat("Sonstige") as name}
               <th
                 scope="col"
-                class="px-3 py-2 text-right font-semibold whitespace-nowrap last:!pr-3"
+                class="px-3 py-2 text-right font-semibold whitespace-nowrap last:pr-3!"
                 style="box-shadow: inset 0 2px 0 0 {colors[name]}"
               >
                 {name}
@@ -135,23 +135,23 @@
         </thead>
         <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
           <tr class="text-gray-500 dark:text-gray-400">
-            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
+            <td class="pl-3! px-3 py-2 text-left whitespace-nowrap">
               Deutschlandtrend (Umfragen)
             </td>
             {#each trend as party}
-              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
+              <td class="px-3 py-2 text-right tabular-nums last:pr-3!">
                 {(party.value * 100).toFixed(1)}%
               </td>
             {/each}
           </tr>
           <tr class="bg-blue-50/60 font-semibold dark:bg-blue-900/20">
-            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
+            <td class="pl-3! px-3 py-2 text-left whitespace-nowrap">
               Vorhersage ({selectedRegion == 0
                 ? "Stadt Braunschweig"
                 : regions.find((e) => e.id == selectedRegion).name})
             </td>
             {#each prediction as party}
-              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
+              <td class="px-3 py-2 text-right tabular-nums last:pr-3!">
                 {(party.value * 100).toFixed(1)}%
               </td>
             {/each}
@@ -159,11 +159,11 @@
           <tr
             class="text-xs text-gray-400 italic dark:text-gray-500"
           >
-            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
+            <td class="pl-3! px-3 py-2 text-left whitespace-nowrap">
               ± Unsicherheit (LOOCV)
             </td>
             {#each prediction as party}
-              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
+              <td class="px-3 py-2 text-right tabular-nums last:pr-3!">
                 {party.error != null
                   ? "± " + (party.error * 100).toFixed(1) + "%"
                   : "–"}
@@ -171,13 +171,13 @@
             {/each}
           </tr>
           <tr class="text-gray-500 dark:text-gray-400">
-            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
+            <td class="pl-3! px-3 py-2 text-left whitespace-nowrap">
               Bundestagswahl 2025 ({selectedRegion == 0
                 ? "Stadt Braunschweig"
                 : regions.find((e) => e.id == selectedRegion).name})
             </td>
             {#each lastElection as party}
-              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
+              <td class="px-3 py-2 text-right tabular-nums last:pr-3!">
                 {(party.value * 100).toFixed(1)}%
               </td>
             {/each}

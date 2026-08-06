@@ -8,7 +8,7 @@
     toResult,
   } from "$lib/elections";
   import { AxisX, AxisY, BarY, Plot, RuleX } from "svelteplot";
-  import { colors } from "$lib/config";
+  import { colors, RELEVANT_PARTIES } from "$lib/config";
   import { onMount } from "svelte";
   import {
     type Election,
@@ -100,59 +100,72 @@
       ist auf Bundestags- und Europawahlen trainiert. Lokale Listen wie BIBS
       kann es grundsätzlich nicht abbilden.
     </p>
-    <div class="overflow-x-scroll">
-      <table class="min-w-max">
+    <div
+      class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700"
+    >
+      <table class="w-full min-w-max border-collapse text-sm">
         <thead>
-          <tr>
-            <th scope="col"></th>
-            <th scope="col">CDU</th>
-            <th scope="col">SPD</th>
-            <th scope="col">GRÜNE</th>
-            <th scope="col">LINKE</th>
-            <th scope="col">AfD</th>
-            <th scope="col">FDP</th>
-            <th scope="col">Sonstige</th>
+          <tr class="bg-gray-50 dark:bg-gray-800">
+            <th
+              scope="col"
+              class="!pl-3 px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400"
+            ></th>
+            {#each RELEVANT_PARTIES.concat("Sonstige") as name}
+              <th
+                scope="col"
+                class="px-3 py-2 text-right font-semibold whitespace-nowrap last:!pr-3"
+                style="box-shadow: inset 0 2px 0 0 {colors[name]}"
+              >
+                {name}
+              </th>
+            {/each}
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td> Deutschlandtrend (Umfragen) </td>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
+          <tr class="text-gray-500 dark:text-gray-400">
+            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
+              Deutschlandtrend (Umfragen)
+            </td>
             {#each trend as party}
-              <td>
+              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
                 {(party.value * 100).toFixed(1)}%
               </td>
             {/each}
           </tr>
-          <tr>
-            <td>
+          <tr class="bg-blue-50/60 font-semibold dark:bg-blue-900/20">
+            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
               Vorhersage ({selectedRegion == 0
                 ? "Stadt Braunschweig"
                 : regions.find((e) => e.id == selectedRegion).name})
             </td>
             {#each prediction as party}
-              <td>
+              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
                 {(party.value * 100).toFixed(1)}%
               </td>
             {/each}
           </tr>
-          <tr>
-            <td>± Unsicherheit (LOOCV)</td>
+          <tr
+            class="text-xs text-gray-400 italic dark:text-gray-500"
+          >
+            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
+              ± Unsicherheit (LOOCV)
+            </td>
             {#each prediction as party}
-              <td>
+              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
                 {party.error != null
                   ? "± " + (party.error * 100).toFixed(1) + "%"
                   : "–"}
               </td>
             {/each}
           </tr>
-          <tr>
-            <td>
+          <tr class="text-gray-500 dark:text-gray-400">
+            <td class="!pl-3 px-3 py-2 text-left whitespace-nowrap">
               Bundestagswahl 2025 ({selectedRegion == 0
                 ? "Stadt Braunschweig"
                 : regions.find((e) => e.id == selectedRegion).name})
             </td>
             {#each lastElection as party}
-              <td>
+              <td class="px-3 py-2 text-right tabular-nums last:!pr-3">
                 {(party.value * 100).toFixed(1)}%
               </td>
             {/each}

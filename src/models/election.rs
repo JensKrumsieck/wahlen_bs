@@ -45,7 +45,7 @@ responses(
     (status = 200, description = "List all elections", body = ElectionsResponse<Election>)
 ))]
 async fn get_elections(State(ctx): State<AppContext>) -> Result<Json<ElectionsResponse<Election>>> {
-    let elections = sqlx::query_as!(Election, "SELECT * FROM election")
+    let elections = sqlx::query_as!(Election, "SELECT * FROM election ORDER BY date, id")
         .fetch_all(&ctx.db)
         .await?;
     Ok(Json(ElectionsResponse { elections }))

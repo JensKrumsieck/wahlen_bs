@@ -100,15 +100,16 @@ export async function getSurveyData() {
 
     let results: ElectionResult[] = [];
     for (const survey of dawum.surveys) {
+        const CDU = survey.results.find(r => r.party.shortcut === 'CDU/CSU')?.result ?? 0;
+        const SPD = survey.results.find(r => r.party.shortcut === 'SPD')?.result ?? 0;
+        const GRÜNE = survey.results.find(r => r.party.shortcut === 'Grüne')?.result ?? 0;
+        const LINKE = survey.results.find(r => r.party.shortcut === 'Linke')?.result ?? 0;
+        const FDP = survey.results.find(r => r.party.shortcut === 'FDP')?.result ?? 0;
+        const AfD = survey.results.find(r => r.party.shortcut === 'AfD')?.result ?? 0;
         results.push({
             name: survey.institute.name,
-            CDU: survey.results.find(r => r.party.shortcut === 'CDU/CSU')?.result ?? 0,
-            SPD: survey.results.find(r => r.party.shortcut === 'SPD')?.result ?? 0,
-            GRÜNE: survey.results.find(r => r.party.shortcut === 'Grüne')?.result ?? 0,
-            LINKE: survey.results.find(r => r.party.shortcut === 'Linke')?.result ?? 0,
-            FDP: survey.results.find(r => r.party.shortcut === 'FDP')?.result ?? 0,
-            AfD: survey.results.find(r => r.party.shortcut === 'AfD')?.result ?? 0,
-            Sonstige: survey.results.find(r => r.party.shortcut === 'Sonstige')?.result ?? 0,
+            CDU, SPD, GRÜNE, LINKE, FDP, AfD,
+            Sonstige: 100 - (CDU + SPD + GRÜNE + LINKE + FDP + AfD),
         });
     }
 
@@ -243,11 +244,13 @@ export function predictResults(regionData: ElectionResult[], bundData: ElectionR
     });
 
     const sum = fits.reduce((acc, fit) => acc + fit.value, 0);
+    // Sonstige is the residual 1 − Σ(6 Parteien); it has no OLS fit of its own, 
+    const sonstige = Math.max(0, 1 - sum);
+    const total = sum + sonstige;
 
     return [
-        ...parties.map((name, index) => ({ name, value: fits[index].value, error: fits[index].error })),
-        // Sonstige is the residual 1 − Σ(6 Parteien); it has no OLS fit of its own, so no LOOCV error.
-        { name: "Sonstige", value: 1 - sum },
+        ...parties.map((name, index) => ({ name, value: fits[index].value / total, error: fits[index].error })),
+        { name: "Sonstige", value: sonstige / total },
     ];
 }
 

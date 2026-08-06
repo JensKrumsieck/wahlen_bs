@@ -90,7 +90,7 @@
         y1={(p: PredictionResult) => p.value - (p.error ?? 0)}
         y2={(p: PredictionResult) => p.value + (p.error ?? 0)}
         strokeWidth={5}
-        stroke={(c: { name: string }) => lighten(colors[c.name])}
+        stroke={(c: { name: string }) => lighten(colors[c.name], .4)}
       />
     </Plot>
     <p class="text-xs text-gray-500 dark:text-gray-400">

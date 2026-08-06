@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Jumper } from "svelte-loading-spinners";
-    import { getResultsForRegion, getSurveyData, predictResults, results_bund, toResult } from "$lib/elections";
+    import { getResultsForRegion, getSurveyData, predictResults, results_bund } from "$lib/elections";
     import type { Election, ElectionResult, Result } from "$lib/types";
     import { onMount } from "svelte";
     import { AxisX, AxisY, BarY, Plot } from "svelteplot";
@@ -12,6 +12,24 @@
     let surveyData: ElectionResult;
     let prediction: Record<string, Result[]> = Object.fromEntries(beznum.map((num) => [num.toString(), []]));
     let loading = true;
+    let loadError: string | null = null;
+
+    /** Floor + largest-remainder (Hare/Niemeyer) seat apportionment. */
+    function hareNiemeyer(shares: number[], totalSeats: number): { seats: number[]; raw: number[]; remainder: number[] } {
+        const raw = shares.map((s) => s * totalSeats);
+        const floor = raw.map((r) => Math.floor(r));
+        const remainder = raw.map((r, i) => r - floor[i]);
+        const assigned = floor.reduce((acc, f) => acc + f, 0);
+        const remaining = Math.max(totalSeats - assigned, 0);
+        const bonusIdx = new Set(
+            remainder
+                .map((_, i) => i)
+                .sort((a, b) => remainder[b] - remainder[a])
+                .slice(0, remaining),
+        );
+        const seats = floor.map((f, i) => f + (bonusIdx.has(i) ? 1 : 0));
+        return { seats, raw, remainder };
+    }
 
     const SEATS = 56;
     let fraction_seats: Result[];
@@ -41,77 +59,86 @@
 
     let turnout: Record<string, number> = { ...defaultTurnout };
     //2021 values
-    let eligble: any = { "111": 8833, "112": 16419, "120": 21619, "130": 21140, "211": 16323, "212": 10977, "221": 17009, "222": 10038, "310": 26974, "321": 17398, "322": 9864, "330": 21134 };
+    let eligible: any = { "111": 8833, "112": 16419, "120": 21619, "130": 21140, "211": 16323, "212": 10977, "221": 17009, "222": 10038, "310": 26974, "321": 17398, "322": 9864, "330": 21134 };
 
     let manualPartyPercent: Record<string, number> = {};
     let manualTotalSeats = 0;
 
-    $: wahlberechtigtPerGwb = Object.fromEntries(Object.entries(gemeindewahlbereiche).map(([gwbKey, bezirke]) => [gwbKey, bezirke.reduce((acc, bez) => acc + (eligble[bez.toString()] ?? 0), 0)]));
+    $: wahlberechtigtPerGwb = Object.fromEntries(Object.entries(gemeindewahlbereiche).map(([gwbKey, bezirke]) => [gwbKey, bezirke.reduce((acc, bez) => acc + (eligible[bez.toString()] ?? 0), 0)]));
 
-    function resetToComputedDefaults() {
-        turnout = { ...defaultTurnout };
-
+    // Recomputes manualPartyPercent/manualTotalSeats for the selected party from the
+    // CURRENT turnout values -- does not touch turnout, so switching parties never
+    // discards turnout numbers the user edited by hand.
+    function recomputeForSelectedParty() {
         Object.entries(gemeindewahlbereiche).forEach(([gwbKey, bezirke]) => {
             let totalWaehler = 0;
             let partyWaehler = 0;
 
             bezirke.forEach((bez) => {
-                const wb = eligble[bez.toString()] ?? 0;
+                const wb = eligible[bez.toString()] ?? 0;
                 const waehler = wb * (turnout[gwbKey] / 100);
                 const partyShare = prediction[bez.toString()]?.find((r) => r.name === selectedParty)?.value ?? 0;
                 totalWaehler += waehler;
                 partyWaehler += waehler * partyShare;
             });
 
-            manualPartyPercent[gwbKey] = totalWaehler > 0 ? (partyWaehler / totalWaehler) * 100 : 0;
+            manualPartyPercent[gwbKey] = totalWaehler > 0 ? Math.round((partyWaehler / totalWaehler) * 1000) / 10 : 0;
         });
         manualPartyPercent = manualPartyPercent;
 
         manualTotalSeats = fraction_seats?.find((r) => r.name === selectedParty)?.value ?? 0;
     }
 
+    function resetToComputedDefaults() {
+        turnout = { ...defaultTurnout };
+        recomputeForSelectedParty();
+    }
+
     onMount(async () => {
-        surveyData = await getSurveyData();
+        try {
+            surveyData = await getSurveyData();
 
-        beznum.forEach((num) => {
-            let regionData = getResultsForRegion(num, elections);
-            let region_prediction = predictResults(regionData, results_bund, surveyData);
-            prediction[num.toString()] = region_prediction;
-        });
-        prediction = prediction;
+            beznum.forEach((num) => {
+                let regionData = getResultsForRegion(num, elections);
+                let region_prediction = predictResults(regionData, results_bund, surveyData);
+                prediction[num.toString()] = region_prediction;
+            });
+            prediction = prediction;
 
-        let regionData = getResultsForRegion(0, elections);
-        let bs_prediction = predictResults(regionData, results_bund, surveyData);
+            let regionData = getResultsForRegion(0, elections);
+            let bs_prediction = predictResults(regionData, results_bund, surveyData);
 
-        //calculate seats in parl
-        fraction_seats = bs_prediction.map((item) => ({
-            ...item,
-            value: Math.round(item.value * SEATS),
-        }));
-        let sum = fraction_seats.slice(0, -1).reduce((acc, item) => acc + item.value, 0);
-        fraction_seats[fraction_seats.length - 1] = {
-            ...fraction_seats[fraction_seats.length - 1],
-            value: SEATS - sum,
-        };
+            // Seats in the council: real Hare-Niemeyer (floor + largest remainder) across
+            // all 7 buckets, not naive per-party rounding with the drift dumped on Sonstige.
+            const totalShare = bs_prediction.reduce((acc, item) => acc + item.value, 0);
+            const shares = bs_prediction.map((item) => (totalShare > 0 ? item.value / totalShare : 0));
+            const { seats } = hareNiemeyer(shares, SEATS);
+            fraction_seats = bs_prediction.map((item, i) => ({ ...item, value: seats[i] }));
 
-        loading = false;
-        resetToComputedDefaults();
+            loading = false;
+            resetToComputedDefaults();
+        } catch (e) {
+            loadError = e instanceof Error ? e.message : String(e);
+            loading = false;
+        }
     });
 
-    $: if (!loading && selectedParty) {
-        resetToComputedDefaults();
+    $: if (!loading && !loadError && selectedParty) {
+        recomputeForSelectedParty();
     }
+
+    $: manualTotalSeats = Math.round(manualTotalSeats);
 
     $: gwbResults = loading
         ? {}
         : Object.fromEntries(
               Object.entries(gemeindewahlbereiche).map(([gwbKey]) => {
                   const wahlberechtigt = wahlberechtigtPerGwb[gwbKey] ?? 0;
-                  const waehler = Math.round(wahlberechtigt * ((turnout[gwbKey] ?? 0) / 100));
+                  const waehlerExact = wahlberechtigt * ((turnout[gwbKey] ?? 0) / 100);
                   const partyPercent = (manualPartyPercent[gwbKey] ?? 0) / 100;
-                  const partyWaehler = Math.round(waehler * partyPercent);
+                  const partyWaehler = Math.round(waehlerExact * partyPercent);
 
-                  return [gwbKey, { wahlberechtigt, waehler, partyPercent, partyWaehler }];
+                  return [gwbKey, { wahlberechtigt, waehler: Math.round(waehlerExact), partyPercent, partyWaehler }];
               }),
           );
 
@@ -120,34 +147,27 @@
 
         const entries = Object.entries(gwbResults) as [string, (typeof gwbResults)[string]][];
         const sumPartyWaehler = entries.reduce((acc, [, r]) => acc + r.partyWaehler, 0);
+        const shares = entries.map(([, r]) => (sumPartyWaehler > 0 ? r.partyWaehler / sumPartyWaehler : 0));
+        const { seats, raw, remainder } = hareNiemeyer(shares, manualTotalSeats);
 
-        const withRaw = entries.map(([key, r]) => {
-            const anteil = sumPartyWaehler > 0 ? r.partyWaehler / sumPartyWaehler : 0;
-            const raw = anteil * manualTotalSeats;
-            const floor = Math.floor(raw);
-            return { key, ...r, anteil, raw, floor, remainder: raw - floor };
-        });
-
-        const remainingSeats = manualTotalSeats - withRaw.reduce((acc, r) => acc + r.floor, 0);
-
-        const bonusKeys = new Set(
-            [...withRaw]
-                .sort((a, b) => b.remainder - a.remainder)
-                .slice(0, Math.max(remainingSeats, 0))
-                .map((r) => r.key),
-        );
-
-        return withRaw
-            .map((r) => ({
+        return entries
+            .map(([key, r], i) => ({
+                key,
                 ...r,
-                bonus: bonusKeys.has(r.key) ? 1 : 0,
-                sitze: r.floor + (bonusKeys.has(r.key) ? 1 : 0),
+                anteil: shares[i],
+                raw: raw[i],
+                floor: Math.floor(raw[i]),
+                remainder: remainder[i],
+                bonus: seats[i] - Math.floor(raw[i]),
+                sitze: seats[i],
             }))
             .sort((a, b) => a.key.localeCompare(b.key));
     })();
 </script>
 
-{#if loading}
+{#if loadError}
+    <p class="text-red-600 dark:text-red-400">Vorhersage konnte nicht geladen werden: {loadError}</p>
+{:else if loading}
     <Jumper />
 {:else}
     <Plot x={{ type: "band" }} y={{ interval: 1, percent: false }}>
@@ -170,7 +190,7 @@
 
         <label class="flex flex-col text-sm gap-2">
             Sitze insgesamt für {selectedParty}
-            <input type="number" min="0" max={SEATS} bind:value={manualTotalSeats} class="p-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-800 w-32" />
+            <input type="number" min="0" max={SEATS} step="1" bind:value={manualTotalSeats} class="p-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-800 w-32" />
         </label>
         <button type="button" on:click={resetToComputedDefaults} class="p-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"> Auf Vorhersage zurücksetzen </button>
     </div>

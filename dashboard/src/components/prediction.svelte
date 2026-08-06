@@ -34,6 +34,7 @@
   let lastElection: Result[];
   let trend: Result[];
   let prediction: PredictionResult[];
+  let predictionError: string | null = null;
 
   onMount(async () => {
     predictionData = await getSurveyData();
@@ -43,10 +44,15 @@
 
   $: regionData = getResultsForRegion(selectedRegion, elections);
   $: if (predictionData && regionData) {
-    lastElection = toResult(
-      regionData.find((d) => d.name == "BTW2025") || regionData[0],
-    );
-    prediction = predictResults(regionData, results_bund, predictionData);
+    try {
+      lastElection = toResult(
+        regionData.find((d) => d.name == "BTW2025") || regionData[0],
+      );
+      prediction = predictResults(regionData, results_bund, predictionData);
+      predictionError = null;
+    } catch (e) {
+      predictionError = e instanceof Error ? e.message : String(e);
+    }
   }
 </script>
 
@@ -63,7 +69,9 @@
   {/each}
 </select>
 <div class="mt-5 center">
-  {#if !prediction || !trend}
+  {#if predictionError}
+    <p class="text-red-600 dark:text-red-400">Vorhersage konnte nicht geladen werden: {predictionError}</p>
+  {:else if !prediction || !trend}
     <Jumper />
   {:else}
     <Plot x={{ type: "band" }} y={{ percent: true }}>

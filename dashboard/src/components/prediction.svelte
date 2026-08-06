@@ -136,7 +136,7 @@
         <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
           <tr class="text-gray-500 dark:text-gray-400">
             <td class="pl-3! px-3 py-2 text-left whitespace-nowrap">
-              Deutschlandtrend (Umfragen)
+               DAWUM-Prognose (Deutschland)
             </td>
             {#each trend as party}
               <td class="px-3 py-2 text-right tabular-nums last:pr-3!">
@@ -146,7 +146,7 @@
           </tr>
           <tr class="bg-blue-50/60 font-semibold dark:bg-blue-900/20">
             <td class="pl-3! px-3 py-2 text-left whitespace-nowrap">
-              Vorhersage ({selectedRegion == 0
+              Prognose ({selectedRegion == 0
                 ? "Stadt Braunschweig"
                 : regions.find((e) => e.id == selectedRegion).name})
             </td>

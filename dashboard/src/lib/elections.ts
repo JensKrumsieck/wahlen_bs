@@ -1,5 +1,5 @@
 import { API_URL, ELECTION_MAP, RELEVANT_PARTIES } from "./config";
-import MLR from 'ml-regression-multivariate-linear';
+import { multiply, transpose, lusolve } from 'mathjs';
 import { Polls, Query, Order, DataType } from 'german-election-polls';
 // @ts-ignore
 import results_csv from '$lib/data/results_germany.csv';
@@ -144,53 +144,105 @@ export async function getSurveyData() {
     return mean;
 }
 
-export function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult) {
-    let X = bundData.map(row => [
-        row.CDU ?? 0,
-        row.SPD ?? 0,
-        row.GRÜNE ?? 0,
-        row.LINKE ?? 0,
-        row.FDP ?? 0,
-        row.AfD ?? 0,
-    ]);
-
-    let Y = regionData.map(row => [
-        row.CDU ?? 0,
-        row.SPD ?? 0,
-        row.GRÜNE ?? 0,
-        row.LINKE ?? 0,
-        row.FDP ?? 0,
-        row.AfD ?? 0,
-    ]);
-
-    X.push([0, 0, 0, 0, 0, 0]);
-    Y.push([0, 0, 0, 0, 0, 0]);
-
-    let x_pred = [
-        predictionData.CDU ?? 0,
-        predictionData.SPD ?? 0,
-        predictionData.GRÜNE ?? 0,
-        predictionData.LINKE ?? 0,
-        predictionData.FDP ?? 0,
-        predictionData.AfD ?? 0,
-    ];
-
-    let party = ["CDU", "SPD", "GRÜNE", "LINKE", "FDP", "AfD", "Sonstige"];
-
-    const prediction = predictMLR(X, Y, x_pred);
-    let sum = prediction.reduce((acc, val) => acc + val, 0);
-    prediction.push(1 - sum);
-
-    return prediction.map((value, index) => {
-        return { name: party[index], value: value };
-    });
+// Fits y = intercept + coefs·x via OLS (normal equations) and returns [intercept, ...coefs].
+function fitOLS(X: number[][], y: number[]): number[] {
+    const design = X.map(row => [1, ...row]);
+    const Xt = transpose(design);
+    const XtX = multiply(Xt, design) as number[][];
+    const Xty = multiply(Xt, y) as number[];
+    const beta = lusolve(XtX, Xty) as number[][];
+    return beta.map(row => row[0]);
 }
 
-function predictMLR(X: number[][], Y: number[][], X_pred: number[]): number[] {
-    const mlr = new MLR(X, Y);
-    const prediction = mlr.predict(X_pred);
+function predictOLS(coefs: number[], x: number[]): number {
+    return coefs[0] + x.reduce((sum, xi, i) => sum + xi * coefs[i + 1], 0);
+}
 
-    return prediction;
+// Leave-one-out mean absolute error of an OLS fit on (X, y).
+function looMAE(X: number[][], y: number[]): number {
+    const n = X.length;
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+        const trainX = X.filter((_, j) => j !== i);
+        const trainY = y.filter((_, j) => j !== i);
+        const coefs = fitOLS(trainX, trainY);
+        total += Math.abs(predictOLS(coefs, X[i]) - y[i]);
+    }
+    return total / n;
+}
+
+function mode(values: number[]): number {
+    const counts = new Map<number, number>();
+    for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+    let best = values[0], bestCount = -1;
+    for (const [v, c] of counts) if (c > bestCount) { best = v; bestCount = c; }
+    return best;
+}
+
+/**
+ * Picks predictor columns (indices into `parties`) for one target party.
+ * Baseline is the party's own Bund value. A second predictor (the strongest
+ * cross-party effect) is added only if it beats the baseline under nested
+ * leave-one-out cross-validation — partner selection happens on the 8
+ * training points, never touching the held-out point. See CLAUDE.md 3.3.
+ */
+function selectPredictors(targetIdx: number, X: number[][], Y: number[][], numParties: number): number[] {
+    const n = X.length;
+    const yTarget = Y.map(row => row[targetIdx]);
+    const ownOnlyError = looMAE(X.map(row => [row[targetIdx]]), yTarget);
+
+    const chosenPartners: number[] = [];
+    const outerErrors: number[] = [];
+    for (let i = 0; i < n; i++) {
+        const trainIdx = [...Array(n).keys()].filter(j => j !== i);
+        const trainX = trainIdx.map(j => X[j]);
+        const trainY = trainIdx.map(j => Y[j][targetIdx]);
+
+        let bestPartner = -1;
+        let bestError = Infinity;
+        for (let p = 0; p < numParties; p++) {
+            if (p === targetIdx) continue;
+            const error = looMAE(trainX.map(row => [row[targetIdx], row[p]]), trainY);
+            if (error < bestError) { bestError = error; bestPartner = p; }
+        }
+        chosenPartners.push(bestPartner);
+
+        const coefs = fitOLS(trainX.map(row => [row[targetIdx], row[bestPartner]]), trainY);
+        const prediction = predictOLS(coefs, [X[i][targetIdx], X[i][bestPartner]]);
+        outerErrors.push(Math.abs(prediction - Y[i][targetIdx]));
+    }
+    const crossError = outerErrors.reduce((a, b) => a + b, 0) / n;
+
+    return crossError < ownOnlyError ? [targetIdx, mode(chosenPartners)] : [targetIdx];
+}
+
+export function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult) {
+    const parties = RELEVANT_PARTIES;
+
+    const bundByName = new Map(bundData.map(row => [row.name, row]));
+    const paired = regionData.map(region => {
+        const bund = bundByName.get(region.name);
+        if (!bund) {
+            throw new Error(`Keine Bundesergebnisse für Wahl "${region.name}" gefunden`);
+        }
+        return { region, bund };
+    });
+
+    const X = paired.map(({ bund }) => parties.map(p => (bund as any)[p] ?? 0));
+    const Y = paired.map(({ region }) => parties.map(p => (region as any)[p] ?? 0));
+    const x_pred = parties.map(p => (predictionData as any)[p] ?? 0);
+
+    const prediction = parties.map((_, targetIdx) => {
+        const predictors = selectPredictors(targetIdx, X, Y, parties.length);
+        const yTarget = Y.map(row => row[targetIdx]);
+        const coefs = fitOLS(X.map(row => predictors.map(p => row[p])), yTarget);
+        return predictOLS(coefs, predictors.map(p => x_pred[p]));
+    });
+
+    const sum = prediction.reduce((acc, val) => acc + val, 0);
+    prediction.push(1 - sum);
+
+    return [...parties, "Sonstige"].map((name, index) => ({ name, value: prediction[index] }));
 }
 
 export function toResult(electionResult: ElectionResult): Result[] {
@@ -198,7 +250,7 @@ export function toResult(electionResult: ElectionResult): Result[] {
     { name: "SPD", value: electionResult.SPD },
     { name: "GRÜNE", value: electionResult.GRÜNE },
     { name: "LINKE", value: electionResult.LINKE },
-    { name: "FDP", value: electionResult.FDP },
     { name: "AfD", value: electionResult.AfD },
+    { name: "FDP", value: electionResult.FDP },
     { name: "Sonstige", value: 1 - (electionResult.CDU + electionResult.SPD + electionResult.GRÜNE + electionResult.LINKE + electionResult.FDP + electionResult.AfD) },]
 }

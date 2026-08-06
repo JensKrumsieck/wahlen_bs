@@ -53,8 +53,8 @@
                         <th scope="col">SPD</th>
                         <th scope="col">GRÜNE</th>
                         <th scope="col">LINKE</th>
-                        <th scope="col">FDP</th>
                         <th scope="col">AfD</th>
+                        <th scope="col">FDP</th>
                         <th scope="col">Sonstige</th>
                     </tr>
                 </thead>

@@ -6,7 +6,7 @@
 </script>
 
 <div
-  class="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert mx-auto"
+  class="prose prose-xl sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert mx-auto"
 >
   <h2 class="text-lg font-bold tracking-tight">
     Vorhersage des Wahlergebnisses

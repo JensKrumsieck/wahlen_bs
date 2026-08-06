@@ -234,6 +234,27 @@ function selectPredictors(targetIdx: number, X: number[][], Y: number[][], numPa
         : { predictors: [targetIdx], error: ownOnlyError };
 }
 
+// How far x_pred sits outside the training range of a predictor column, as a
+// fraction of that column's range. 0 = inside range, 1 = one full range-width
+// beyond the edge. LOOCV error is only valid for interpolation; extrapolating
+// past the training window (e.g. a party polling above/below anything seen in
+// BTW/EUW 2009-2025) understates the real error, so this scales it up.
+function extrapolationOvershoot(x_pred: number[], X: number[][], predictors: number[]): number {
+    let maxOvershoot = 0;
+    for (const p of predictors) {
+        const col = X.map(row => row[p]);
+        const min = Math.min(...col);
+        const max = Math.max(...col);
+        const range = max - min;
+        if (range <= 0) continue;
+        const overshoot = x_pred[p] < min ? (min - x_pred[p]) / range
+            : x_pred[p] > max ? (x_pred[p] - max) / range
+                : 0;
+        maxOvershoot = Math.max(maxOvershoot, overshoot);
+    }
+    return maxOvershoot;
+}
+
 export function predictResults(regionData: ElectionResult[], bundData: ElectionResult[], predictionData: ElectionResult): PredictionResult[] {
     const parties = RELEVANT_PARTIES;
 
@@ -255,7 +276,8 @@ export function predictResults(regionData: ElectionResult[], bundData: ElectionR
         const yTarget = Y.map(row => row[targetIdx]);
         const coefs = fitOLS(X.map(row => predictors.map(p => row[p])), yTarget);
         const value = predictOLS(coefs, predictors.map(p => x_pred[p]));
-        return { value, error };
+        const overshoot = extrapolationOvershoot(x_pred, X, predictors);
+        return { value, error: error * (1 + overshoot) };
     });
 
     const sum = fits.reduce((acc, fit) => acc + fit.value, 0);

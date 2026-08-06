@@ -197,7 +197,7 @@
     <h3>Sitzverteilung {selectedParty} nach Hare-Niemeyer</h3>
 
     <div class="overflow-x-scroll">
-        <table class="w-full text-sm text-left">
+        <table class="min-w-max w-full text-sm text-left">
             <thead>
                 <tr>
                     <th>GWB</th>

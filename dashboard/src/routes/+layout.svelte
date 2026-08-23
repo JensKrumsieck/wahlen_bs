@@ -2,6 +2,7 @@
 	import { onMount } from "svelte";
 	import { dev } from "$app/environment";
 	import * as Swetrix from "swetrix";
+	import { SITE_URL } from "$lib/config";
 
 	onMount(() => {
 		Swetrix.init("wiMXxZm1S4Ep", {
@@ -17,6 +18,16 @@
 	let showMenu = $state(false);
 	let { children } = $props();
 
+	const websiteSchema = JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		name: "Wahlanalyse aus Braunschweig",
+		url: SITE_URL,
+		inLanguage: "de",
+		description:
+			"Interaktive Analyse und Vorhersage von Wahlergebnissen in Braunschweig.",
+	});
+
 	const navItems = [
 		{ href: "/", label: "Wahlvorhersage" },
 		{ href: "/timeline", label: "Zeitlicher Verlauf" },
@@ -26,6 +37,12 @@
 
 <svelte:head>
 	<title>Wahlanalyse aus Braunschweig</title>
+	<meta
+		name="description"
+		content="Interaktive Analyse und Vorhersage von Wahlergebnissen in Braunschweig: Zeitlicher Verlauf, Kartenansicht nach Stadtbezirk und Sitzverteilung im Rat."
+	/>
+	<meta name="robots" content="index, follow" />
+	{@html `<script type="application/ld+json">${websiteSchema}</script>`}
 </svelte:head>
 
 <header class="bg-[#00a646] p-2.5">

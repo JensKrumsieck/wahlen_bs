@@ -1,4 +1,5 @@
 export const API_URL = 'https://api.wahl.jenskrumsieck.de'
+export const SITE_URL = 'https://wahl.jenskrumsieck.de'
 export const ELECTION_MAP = {
     "Bundestagswahl": "BTW",
     "Europawahl": "EUW",

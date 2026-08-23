@@ -1,16 +1,32 @@
 <script lang="ts">
   import Prediction from "../components/prediction.svelte";
+  import { SITE_URL } from "$lib/config";
 
   export let data;
   const { elections, regions } = data;
+
+  const title = "Wahlvorhersage Braunschweig | Wahlanalyse aus Braunschweig";
+  const description =
+    "Vorhersage des Wahlergebnisses in Braunschweig auf Basis linearer Regressionen zu bundesweiten Wahlergebnissen und aktuellen Umfragen.";
 </script>
+
+<svelte:head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={SITE_URL + "/"} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={SITE_URL + "/"} />
+  <meta name="twitter:card" content="summary" />
+</svelte:head>
 
 <div
   class="prose prose-xl sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert mx-auto"
 >
-  <h2 class="text-lg font-bold tracking-tight">
+  <h1 class="text-lg font-bold tracking-tight">
     Vorhersage des Wahlergebnisses
-  </h2>
+  </h1>
   <Prediction {elections} {regions} />
   <p>
     Die Vorhersage des Wahlergebnisses basiert auf je einer linearen Regression

@@ -1,5 +1,5 @@
 use crate::models::{election, party, region};
-use axum::{response::Redirect, routing::get, Router};
+use axum::{http::StatusCode, response::Redirect, routing::get, Router};
 use sqlx::SqlitePool;
 use std::time::Duration;
 use tokio::net::TcpListener;
@@ -52,7 +52,7 @@ fn api_router(ctx: AppContext) -> Router {
             TraceLayer::new_for_http().on_failure(()),
             CompressionLayer::new(),
             CatchPanicLayer::new(),
-            TimeoutLayer::new(Duration::from_secs(20)),
+            TimeoutLayer::with_status_code(StatusCode::REQUEST_TIMEOUT, Duration::from_secs(20)),
             CorsLayer::new()
                 .allow_origin(Any)
                 .allow_methods([axum::http::Method::GET])

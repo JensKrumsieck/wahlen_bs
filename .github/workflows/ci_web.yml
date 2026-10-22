@@ -1,23 +1,23 @@
-name: Astro Build test
+name: Build& test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
-    - run: npm ci
-      working-directory: dashboard
-    - run: npm run build      
-      working-directory: dashboard
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: dashboard
+      - run: npm run build
+        working-directory: dashboard

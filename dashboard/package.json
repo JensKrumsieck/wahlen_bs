@@ -17,8 +17,8 @@
 	},
 	"devDependencies": {
 		"@rollup/plugin-dsv": "^3.0.5",
-		"@sveltejs/adapter-node": "^5.2.12",
-		"@sveltejs/kit": "2.70.2",
+		"@sveltejs/adapter-node": "^6.0.0",
+		"@sveltejs/kit": "3.1.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.3.1",

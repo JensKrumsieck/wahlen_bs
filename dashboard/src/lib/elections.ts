@@ -3,7 +3,7 @@ import { multiply, transpose, lusolve } from 'mathjs';
 import { Polls, Query, Order, DataType } from 'german-election-polls';
 import type { Survey } from 'german-election-polls/lib/models/Survey';
 // @ts-ignore
-import results_csv from '$lib/data/results_germany.csv';
+import results_csv from '#lib/data/results_germany.csv';
 import type { Election, ElectionResult, Result, PredictionResult } from "./types";
 
 

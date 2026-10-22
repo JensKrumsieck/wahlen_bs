@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { getResultsForRegion } from "$lib/elections";
+    import { getResultsForRegion } from "#lib/elections.js";
     import { geoMercator } from "d3-geo";
-    import { type Election, type ElectionResult } from "$lib/types";
+    import { type Election, type ElectionResult } from "#lib/types.js";
     import { Geo, Plot } from "svelteplot";
-    import geoJson from "$lib/assets/districts.geojson?raw";
-    import { ELECTION_MAP, RELEVANT_PARTIES } from "$lib/config";
+    import geoJson from "#lib/assets/districts.geojson?raw";
+    import { ELECTION_MAP, RELEVANT_PARTIES } from "#lib/config.js";
     import { Jumper } from "svelte-loading-spinners";
     import { onMount } from "svelte";
 

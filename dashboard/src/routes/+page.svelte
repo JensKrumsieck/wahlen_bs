@@ -1,6 +1,6 @@
 <script lang="ts">
   import Prediction from "../components/prediction.svelte";
-  import { SITE_URL } from "$lib/config";
+  import { SITE_URL } from "#lib/config.js";
 
   export let data;
   const { elections, regions } = data;

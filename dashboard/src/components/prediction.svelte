@@ -6,16 +6,16 @@
     predictResults,
     results_bund,
     toResult,
-  } from "$lib/elections";
+  } from "#lib/elections.js";
   import { AxisX, AxisY, BarY, Plot, RuleX } from "svelteplot";
-  import { colors, RELEVANT_PARTIES } from "$lib/config";
+  import { colors, RELEVANT_PARTIES } from "#lib/config.js";
   import { onMount } from "svelte";
   import {
     type Election,
     type ElectionResult,
     type Result,
     type PredictionResult,
-  } from "$lib/types";
+  } from "#lib/types.js";
 
   export let elections: Election[];
   export let regions: any[];

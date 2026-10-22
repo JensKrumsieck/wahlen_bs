@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { dev } from "$app/environment";
+	import { dev } from '$app/env';
 	import * as Swetrix from "swetrix";
-	import { SITE_URL } from "$lib/config";
+	import { SITE_URL } from "#lib/config.js";
 
 	onMount(() => {
 		Swetrix.init("wiMXxZm1S4Ep", {
@@ -55,7 +55,7 @@
 			<button
 				class="md:hidden p-2"
 				aria-label="Open menu"
-				onclick={() => (showMenu = !showMenu)}
+				onclick={() => showMenu = !showMenu}
 			>
 				<svg
 					class="w-6 h-6"
@@ -68,7 +68,7 @@
 						stroke-linejoin="round"
 						stroke-width="2"
 						d="M4 6h16M4 12h16M4 18h16"
-					/>
+					></path>
 				</svg>
 			</button>
 			<div class="hidden md:flex items-center space-x-4">

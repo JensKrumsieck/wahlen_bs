@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { getResultsForRegion } from "$lib/elections";
+    import { getResultsForRegion } from "#lib/elections.js";
     import { AxisX, AxisY, Line, Plot, Pointer, Text } from "svelteplot";
-    import { colors, RELEVANT_PARTIES } from "$lib/config";
-    import { type Election } from "$lib/types";
+    import { colors, RELEVANT_PARTIES } from "#lib/config.js";
+    import { type Election } from "#lib/types.js";
     import { Jumper } from "svelte-loading-spinners";
     import { onMount } from "svelte";
 
